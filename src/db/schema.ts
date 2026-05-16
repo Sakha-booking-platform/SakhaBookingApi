@@ -4,6 +4,7 @@ import {
   integer,
   text,
   timestamp,
+  uuid,
   boolean,
   time,
   date,
@@ -29,20 +30,21 @@ export const genderEnum = pgEnum("gender", ["male", "female", "other"]);
 /* =========================
    USER 
 ========================= */
+// Stores application users and their login credentials, contact information, role, and account status.
 export const users = pgTable("users", {
   userId: serial("user_id").primaryKey(),
-  username: text("username").notNull(),
-  passwordHash: text("password_hash").notNull(),
+
   email: text("email").notNull().unique(),
-  phone: text("phone"),
-  role: roleEnum("role").notNull().default("patient"), // Using Enum here
+
+  role: roleEnum("role").notNull().default("patient"),
+
   createdAt: timestamp("created_at").defaultNow(),
-  status: statusEnum("status").default("active"),
 });
 
 /* =========================
    DOCTOR 
 ========================= */
+// Holds doctor profiles, their user reference, clinic affiliation, experience, and contact details.
 export const doctors = pgTable("doctors", {
   doctorId: serial("doctor_id").primaryKey(),
 userId: integer("user_id").references(() => users.userId, { onDelete: "cascade" }),
@@ -58,6 +60,7 @@ userId: integer("user_id").references(() => users.userId, { onDelete: "cascade" 
 /* =========================
    DOCTORS_TO_SPECIALIZATIONS (Junction Table)
 ========================= */
+// Junction table linking doctors to medical specializations, preventing duplicate assignments.
 export const doctorsToSpecializations = pgTable("doctors_to_specializations", {
   // معرف الطبيب
   doctorId: integer("doctor_id")
@@ -76,6 +79,7 @@ export const doctorsToSpecializations = pgTable("doctors_to_specializations", {
 /* =========================
    APPOINTMENT (Updated with Status Enum)
 ========================= */
+// Records patient appointments with doctors, clinic details, timing, status, and optional notes.
 export const appointments = pgTable("appointments", {
   appointmentId: serial("appointment_id").primaryKey(),
   patientId: integer("patient_id").references(() => patients.patientId , {onDelete: "restrict"}),
@@ -94,6 +98,7 @@ export const appointments = pgTable("appointments", {
 /* =========================
    SPECIALIZATION
 ========================= */
+// Defines medical specializations that doctors can be associated with.
 export const specializations = pgTable("specializations", {
   specializationId: serial("specialization_id").primaryKey(),
   name: text("name").notNull(),
@@ -103,6 +108,7 @@ export const specializations = pgTable("specializations", {
 /* =========================
    CLINIC
 ========================= */
+// Contains clinic locations, contact information, pricing, and descriptive details.
 export const clinics = pgTable("clinics", {
   clinicId: serial("clinic_id").primaryKey(),
   name: text("name").notNull(),
@@ -116,6 +122,7 @@ export const clinics = pgTable("clinics", {
 /* =========================
    STAFF
 ========================= */
+// Stores clinic staff members linked to user accounts, including roles and contact info.
 export const staff = pgTable("staff", {
   staffId: serial("staff_id").primaryKey(),
 userId: integer("user_id").references(() => users.userId, { onDelete: "cascade" }),
@@ -129,10 +136,12 @@ userId: integer("user_id").references(() => users.userId, { onDelete: "cascade" 
 /* =========================
    PATIENT
 ========================= */
+// Stores patient profiles and demographics linked to user accounts.
 export const patients = pgTable("patients", {
   patientId: serial("patient_id").primaryKey(),
 userId: integer("user_id").references(() => users.userId, { onDelete: "cascade" }),
   fullName: text("full_name").notNull(),
+  phone : text("phone"),
 gender: genderEnum("gender"),
   birthDate: date("birth_date"),
   address: text("address"),
@@ -141,6 +150,7 @@ gender: genderEnum("gender"),
 /* =========================
    NOTIFICATION
 ========================= */
+// Tracks notifications sent to users, including read status and message payload.
 export const notifications = pgTable("notifications", {
   notificationId: serial("notification_id").primaryKey(),
   userId: integer("user_id").references(() => users.userId),
@@ -151,6 +161,7 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Defines doctor availability windows by day, time range, and maximum patients per slot.
 export const doctorAvailability = pgTable("doctor_availability", {
   availabilityId: serial("availability_id").primaryKey(),
   doctorId: integer("doctor_id").references(() => doctors.doctorId),
@@ -166,6 +177,7 @@ endTime: time("end_time").notNull(),
 /* =========================
    REVIEWS & RATINGS (Combined)
 ========================= */
+// Records patient reviews and ratings for doctors and clinics, optionally tied to appointments.
 export const reviews = pgTable("reviews", {
   reviewId: serial("review_id").primaryKey(),
   
@@ -184,3 +196,57 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+
+// Stores short-lived authentication tokens for email-based verification and one-time access.
+export const authTokens = pgTable('auth_tokens', {
+  id: uuid('id')
+    .defaultRandom()
+    .primaryKey(),
+
+  email: text('email')
+    .notNull(),
+
+  tokenHash: text('token_hash')
+    .notNull(),
+
+  used: boolean('used')
+    .default(false)
+    .notNull(),
+
+  expiresAt: timestamp('expires_at')
+    .notNull(),
+
+  createdAt: timestamp('created_at')
+    .defaultNow()
+    .notNull(),
+});
+
+//
+// Stores refresh tokens for longer-lived user sessions and token rotation.
+export const refreshTokens =
+  pgTable('refresh_tokens', {
+
+    id: uuid('id')
+      .defaultRandom()
+      .primaryKey(),
+
+    userId: integer('user_id')
+      .notNull(),
+
+    tokenHash: text('token_hash')
+      .notNull(),
+
+    revoked: boolean('revoked')
+      .default(false)
+      .notNull(),
+
+    expiresAt: timestamp('expires_at')
+      .notNull(),
+
+    createdAt: timestamp('created_at')
+      .defaultNow()
+      .notNull(),
+
+    lastUsedAt: timestamp('last_used_at'),
+  });

@@ -1,6 +1,6 @@
 {
-  "id": "8dc2e131-ea35-48f2-87cf-d1cae786fd69",
-  "prevId": "f9ed3958-9afc-424c-9a48-4cfff6f9191e",
+  "id": "d30801ec-9f6e-44d3-84b4-1258395ebac5",
+  "prevId": "8dc2e131-ea35-48f2-87cf-d1cae786fd69",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -547,6 +547,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "gender": {
           "name": "gender",
           "type": "gender",
@@ -894,29 +900,11 @@
           "primaryKey": true,
           "notNull": true
         },
-        "username": {
-          "name": "username",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "password_hash": {
-          "name": "password_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "email": {
           "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "phone": {
-          "name": "phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "role": {
           "name": "role",
@@ -932,14 +920,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
-        },
-        "status": {
-          "name": "status",
-          "type": "status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'active'"
         }
       },
       "indexes": {},
