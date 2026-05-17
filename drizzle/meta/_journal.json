@@ -22,6 +22,20 @@
       "when": 1778682147325,
       "tag": "0002_overrated_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779016456918,
+      "tag": "0003_parallel_pet_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779025249283,
+      "tag": "0004_broad_joystick",
+      "breakpoints": true
     }
   ]
 }
