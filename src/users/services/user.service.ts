@@ -1,13 +1,13 @@
 import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { patients, users } from 'src/db/schema';
+import { doctors, patients, staff, users } from 'src/db/schema';
 
 import { db } from 'src/db';
 import { CreateUserDto } from '../dto/create_user.dyo';
 import { CreatePatientProfileDto } from '../dto/create-patient-profile.dto';
 @Injectable()
 export class UsersService {
-    
+
     async findByEmail(email: string) {
         if (!email) throw new BadRequestException('البريد الإلكتروني مطلوب للبحث');
 
@@ -39,16 +39,16 @@ export class UsersService {
         return user;
     }
 
-   async create(data: CreateUserDto) {
-    const [user] = await db
-        .insert(users) 
-        .values({
-            email: data.email.toLowerCase(),
-        })
-        .returning();
+    async create(data: CreateUserDto) {
+        const [user] = await db
+            .insert(users)
+            .values({
+                email: data.email.toLowerCase(),
+            })
+            .returning();
 
-    return user;
-}
+        return user;
+    }
 
 
     async upsertProfile(userId: number, dto: CreatePatientProfileDto) {
@@ -95,5 +95,37 @@ export class UsersService {
             patient: created,
         };
     }
+
+
+    async findAllUsersForAdmin() {
+        return await db
+            .select({
+                id: users.userId,
+                email: users.email,
+                role: users.role,
+                createdAt: users.createdAt,
+                // جلب تفاصيل الطبيب إن وجدت
+                doctorDetails: {
+                    fullName: doctors.fullName,
+                    phone: doctors.phone,
+                    status: doctors.status,
+                },
+                // جلب تفاصيل المريض إن وجدت
+                patientDetails: {
+                    fullName: patients.fullName,
+                    phone: patients.phone,
+                },
+                // جلب تفاصيل الموظف إن وجدت
+                staffDetails: {
+                    fullName: staff.fullName,
+                    position: staff.position,
+                },
+            })
+            .from(users)
+            .leftJoin(doctors, eq(users.userId, doctors.userId))
+            .leftJoin(patients, eq(users.userId, patients.userId))
+            .leftJoin(staff, eq(users.userId, staff.userId));
+    }
+
 
 }

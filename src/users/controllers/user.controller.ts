@@ -5,6 +5,9 @@ import { FindUserByEmailDto } from '../dto/find_user_by_email.dto';
 import { CreatePatientProfileDto } from '../dto/create-patient-profile.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { UserRole } from 'src/auth/enums/userRole';
+import { AuthRollGuard } from 'src/auth/guards/auth-roll.guard';
+import { userRoles } from 'src/auth/decorators/user_roll.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -34,5 +37,14 @@ export class UsersController {
       @Body() dto: CreatePatientProfileDto,
   ) {
       return this.usersService.upsertProfile(user.id, dto);
+  }
+
+
+  @Get('admin/all-users')
+  @UseGuards(AuthRollGuard)
+   @userRoles(UserRole.ADMIN)
+
+  async getAllUsers() {
+    return this.usersService.findAllUsersForAdmin();
   }
 }
