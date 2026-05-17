@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gt } from 'drizzle-orm';
 import { db } from '../../db/index';
 import { TokenService } from './token.service';
 import { EmailService } from './email.service';
@@ -25,7 +25,7 @@ export class AuthService {
         const hashedToken = this.tokenService.hashToken(rawToken);
 
         await db.insert(authTokens).values({
-            email,
+            email: email,
             tokenHash: hashedToken,
             expiresAt: new Date(Date.now() + 30 * 60 * 1000),
             used: false,
@@ -50,7 +50,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid token');
         }
 
-      const nowInUtc = new Date().getTime();
+        const nowInUtc = new Date().getTime();
         const expiresAtUtc = new Date(tokenRecord.expiresAt).getTime();
 
         if (expiresAtUtc < nowInUtc) {
@@ -66,6 +66,7 @@ export class AuthService {
         let user = await db.query.users.findFirst({
             where: eq(users.email, tokenRecord.email),
         });
+        console.log("User found for email:", tokenRecord.email, user);
 
         if (!user) {
             user = await this.usersService.create({
@@ -75,21 +76,23 @@ export class AuthService {
 
         return this.generateTokens(Number(user.userId), user.email);
     }
-
-    async generateTokens(userId: number, email: string) {
+async generateTokens(userId: number, email: string, dbInstance: any = db) {
         const accessToken = this.jwtService.sign(
-            { id: userId, email },
-            { expiresIn: 15 * 24 * 60 * 60 } // 15 days in seconds
+            { id: userId, email: email, role: 'user' },
+            { expiresIn: '15m' }
         );
 
         const rawRefreshToken = this.tokenService.generateToken();
         const refreshHash = this.tokenService.hashToken(rawRefreshToken);
 
-        await db.insert(refreshTokens).values({
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+
+        await dbInstance.insert(refreshTokens).values({
             userId,
             tokenHash: refreshHash,
             revoked: false,
-            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            expiresAt: expiresAt,
         });
 
         return {
@@ -97,37 +100,67 @@ export class AuthService {
             refreshToken: rawRefreshToken,
         };
     }
+async refresh(dto: RefreshTokenDto) {
+    const hashed = this.tokenService.hashToken(dto.refreshToken);
 
-    async refresh(dto: RefreshTokenDto) {
-        const hashed = this.tokenService.hashToken(dto.refreshToken);
-
-        const token = await db.query.refreshTokens.findFirst({
+    return await db.transaction(async (tx) => {
+        const token = await tx.query.refreshTokens.findFirst({
             where: and(
                 eq(refreshTokens.tokenHash, hashed),
                 eq(refreshTokens.revoked, false),
+                gt(refreshTokens.expiresAt, new Date()),
             ),
         });
 
         if (!token) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('Invalid or expired refresh token');
         }
 
-        return this.generateTokens(token.userId, '');
-    }
+        const user = await tx.query.users.findFirst({
+            where: eq(users.userId, token.userId),
+        });
 
-    async logout(userId: string) {
-        await db
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        await tx
             .update(refreshTokens)
             .set({ revoked: true })
-            .where(eq(refreshTokens.userId, Number(userId)));
+            .where(eq(refreshTokens.id, token.id));
 
-        return { success: true };
-    }
-    async getCurrentUser(user: any) {
-  return {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  };
+        const tokens = await this.generateTokens(user.userId, user.email, tx);
+
+        return tokens;
+    });
 }
+    
+    async logout(userId: string) {
+    const result = await db
+        .update(refreshTokens)
+        .set({ revoked: true })
+        .where(
+            and(
+                eq(refreshTokens.userId, Number(userId)),
+                eq(refreshTokens.revoked, false)
+            )
+        )
+        .returning();
+
+    if (result.length > 1) {
+        console.warn(`Warning: Multiple active sessions revoked for user ID ${userId}.`);
+        return { message: 'Logged out from all devices successfully' };
+    }
+
+    return { message: 'Logged out successfully' };
+}
+    async getCurrentUser(user: any) {
+
+        console.log("Current User Payload:", user);
+        return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+        };
+    }
 }

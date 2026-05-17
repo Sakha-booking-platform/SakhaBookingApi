@@ -18,6 +18,7 @@ from '../dto/verify-token.dto';
 
 import { AuthGuard } from '../guards/auth.guard';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
+import { CurrentUser } from '../decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -50,15 +51,16 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @Get('me')
   async currentUser(
-    @Req() req: any,
+   @CurrentUser() user: any,
   ) {
-    return this.authService.getCurrentUser(req.user);
+    return this.authService.getCurrentUser(user);
   }
 
+  @UseGuards(AuthGuard)
   @Post('logout')
   async logout(
-    @Req() req: any,
+   @CurrentUser() user: any,
   ) {
-    return this.authService.logout(req.user.id);
+    return this.authService.logout(user.id);
   }
 }
