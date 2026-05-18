@@ -16,7 +16,7 @@ import {
 import { relations } from 'drizzle-orm';
 
 
-export const roleEnum = pgEnum("role", ["admin", "doctor", "patient", "staff"]);
+export const roleEnum = pgEnum("role", ["ADMIN", "DOCTOR", "PATIENT", "STAFF"]);
 export const statusEnum = pgEnum("status", ["active", "inactive", "suspended"]);
 export const appointmentStatusEnum = pgEnum("appointment_status", [
   "pending", 
@@ -30,7 +30,7 @@ export const genderEnum = pgEnum("gender", ["male", "female", "other"]);
 export const users = pgTable("users", {
   userId: serial("user_id").primaryKey(),
   email: text("email").notNull().unique(),
-  role: roleEnum("role").notNull().default("patient"),
+  role: roleEnum("role").notNull().default("PATIENT"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -40,6 +40,7 @@ export const clinics = pgTable("clinics", {
   location: text("location"),
   phone: text("phone"),
   clinicImage : text("clinic_image"),
+  city : text("city"),
   price : integer().default(0),
   description: text("description"),
 });
@@ -57,11 +58,11 @@ export const doctors = pgTable("doctors", {
   clinicId: integer("clinic_id").references(() => clinics.clinicId, { onDelete: "set null" }),
   phone: text("phone"),
   yearsOfExperience: integer("years_of_experience"),
-  bio: text("bio"),
+  bio: text("bio"), 
   status: statusEnum("status").default("active"),
 });
 
-export const doctorsToSpecializations = pgTable("doctors_to_specializations", {
+export const doctorsToSpecializations = pgTable("doctors_to_specializations", { 
   doctorId: integer("doctor_id")
     .notNull()
     .references(() => doctors.doctorId, { onDelete: "cascade" }),
@@ -132,7 +133,7 @@ export const reviews = pgTable("reviews", {
     .references(() => patients.patientId, { onDelete: "cascade" })
     .notNull(),
   rating: integer("rating").notNull(),
-  comment: text("comment"),
+  comment: text("comment"), 
   appointmentId: integer("appointment_id")
     .references(() => appointments.appointmentId, { onDelete: "set null" })
     .unique(), 
@@ -143,6 +144,7 @@ export const reviews = pgTable("reviews", {
 export const authTokens = pgTable('auth_tokens', {
   id: uuid('id').defaultRandom().primaryKey(),
   email: text('email').notNull(),
+role: roleEnum('role').default('PATIENT').notNull(),
   tokenHash: text('token_hash').notNull(),
   used: boolean('used').default(false).notNull(),
   expiresAt: timestamp('expires_at').notNull(),

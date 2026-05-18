@@ -3,6 +3,7 @@ import { db } from 'src/db'; // تأكد من مطابقة مسار استيرا
 import * as schema from 'src/db/schema';
 import { eq } from 'drizzle-orm';
 import { CreateClinicDto } from './dto/create_clinic.dto';
+import { CreateSpecializationDto } from './dto/create-specialization.dto';
 
 @Injectable()
 export class ClinicsService {
@@ -21,9 +22,9 @@ export class ClinicsService {
         .select({
           id: schema.clinics.clinicId,
           name: schema.clinics.name,
-          city: schema.clinics.city,
-          address: schema.clinics.address,
+          address: schema.clinics.location,
           phone: schema.clinics.phone,
+
         })
         .from(schema.clinics);
     } catch (error) {
@@ -92,7 +93,7 @@ export class ClinicsService {
         .insert(schema.clinics)
         .values({
           name: dto.name,
-          address: dto.address,
+          location: dto.address,
           city: dto.city,
           phone: dto.phone,
           description: dto.description || null,

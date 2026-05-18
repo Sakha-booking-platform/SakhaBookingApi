@@ -17,9 +17,9 @@ async function main() {
   // 1. جدول المستخدمين (Users)
   console.log("👥 بذر جدول المستخدمين...");
   await db.insert(schema.users).values([
-    { userId: 1, email: "doctor1@sakha.com", role: "doctor", createdAt: new Date() },
-    { userId: 2, email: "patient1@sakha.com", role: "patient", createdAt: new Date() },
-    { userId: 3, email: "staff1@sakha.com", role: "staff", createdAt: new Date() },
+    { userId: 1, email: "doctor1@sakha.com", role: "STAFF", createdAt: new Date() },
+    { userId: 2, email: "patient1@sakha.com", role: "PATIENT", createdAt: new Date() },
+    { userId: 3, email: "staff1@sakha.com", role: "STAFF", createdAt: new Date() },
   ]).onConflictDoNothing();
 
   // 2. جدول العيادات (Clinics)
@@ -138,6 +138,7 @@ async function main() {
     { 
       id: "11111111-2222-3333-4444-555555555555", // 👈 صيغة UUID حقيقية وصالحة للفحص
       email: "doctor1@sakha.com", 
+      role : "ADMIN",
       tokenHash: "sample_access_token_for_doctor", 
       expiresAt: new Date("2026-12-31") 
     }

@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { ClinicsService } from '../services/clinics.service';
-import { CreateClinicDto } from '../dtos/create-clinic.dto';
-import { CreateSpecializationDto } from '../dtos/create-specialization.dto';
+import { ClinicsService } from './clinics.service';
+import { CreateClinicDto } from './dto/create_clinic.dto';
+import { CreateSpecializationDto } from './dto/create-specialization.dto';
 import { AuthRollGuard } from 'src/auth/guards/auth-roll.guard';
-import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/auth/enums/userRole';
+import { userRoles } from 'src/auth/decorators/user_roll.decorator';
 
 @Controller('clinics')
 export class ClinicsController {
@@ -52,7 +52,7 @@ export class ClinicsController {
    */
   @Post()
   @UseGuards(AuthRollGuard)
-  @Roles(UserRole.ADMIN)
+  @userRoles(UserRole.ADMIN)
   async createClinic(@Body() createClinicDto: CreateClinicDto) {
     return this.clinicsService.createClinic(createClinicDto);
   }
@@ -63,7 +63,7 @@ export class ClinicsController {
    */
   @Post('specializations')
   @UseGuards(AuthRollGuard)
-  @Roles(UserRole.ADMIN)
+  @userRoles(UserRole.ADMIN)
   async createSpecialization(@Body() createSpecDto: CreateSpecializationDto) {
     return this.clinicsService.createSpecialization(createSpecDto);
   }
