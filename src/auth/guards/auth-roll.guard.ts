@@ -43,13 +43,14 @@ export class AuthRollGuard implements CanActivate {
             throw new UnauthorizedException(MESSAGES.AUTH.INVALID_TOKEN);
         }
 
-        const user = await this.authService.getCurrentUser(payload.id);
+        const user = await this.authService.getCurrentUser(payload);
         if (!user) {
             throw new UnauthorizedException(MESSAGES.AUTH.ACCESS_DENIED_USER_NOT_FOUND);
         }
 
         if (rolls.includes(user.role)) {
-            request[CURRENT_USER_KEY] = payload;
+            request[CURRENT_USER_KEY] = user;
+
             return true;
         }
 

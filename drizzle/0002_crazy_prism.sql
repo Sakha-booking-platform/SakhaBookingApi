@@ -1,0 +1,1 @@
+ALTER TABLE "auth_tokens" ALTER COLUMN "role" SET DEFAULT 'PATIENT';

@@ -1,5 +1,5 @@
 export enum UserRole {
-  STUDENT = 'PATIENT', // who will browse the platform
+  PATIENT = 'PATIENT', // who will browse the platform
   ADMIN = 'ADMIN', // teacher who will upload the content 
-  OWNER = 'STAFF'// who has all privalges
+  STAFF = 'STAFF'// who has all privalges
 }
