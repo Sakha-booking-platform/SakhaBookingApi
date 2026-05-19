@@ -7,12 +7,11 @@ import { ClinicsController } from './clinics.controller';
 @Module({
   imports: [
     AuthModule, 
-    UsersModule // 🔥 لتوفير الـ UsersService لأي حارس أو استراتيجية تعمل في هذا النطاق
+    UsersModule 
   ],
   controllers: [ClinicsController],
   providers: [
     ClinicsService 
-    // 🧹 قمنا بحذف AuthRollGuard و JwtStrategy من هنا تماماً!
   ]
 })
 export class ClinicsModule {}

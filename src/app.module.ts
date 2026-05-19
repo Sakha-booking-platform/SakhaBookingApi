@@ -6,13 +6,15 @@ import { UsersModule } from './users/users.module';
 import { ClinicsModule } from './clinics/clinics.module';
 
 import { AppController } from './app.controller';
+import { ProfilesModule } from './profiles/profiles.module';
+import { AvailabilityModule } from './availability/availability.module';
 
-@Module({ 
+@Module({  
   imports: [
       ConfigModule.forRoot({
       isGlobal: true,
     }),
-    AuthModule, UsersModule , ClinicsModule , ClinicsModule],
+    AuthModule, UsersModule, ProfilesModule, ClinicsModule, AvailabilityModule],
   controllers: [AppController],
   providers: [AppService],
 })
