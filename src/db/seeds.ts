@@ -12,131 +12,150 @@ const pool = new Pool({
 const db = drizzle(pool, { schema });
 
 async function main() {
-  console.log("⏳ بدأت عملية بذر البيانات المصححة...");
+  console.log("⏳ بدأت عملية بذر البيانات المصححة والديناميكية...");
 
   // 1. جدول المستخدمين (Users)
   console.log("👥 بذر جدول المستخدمين...");
-  await db.insert(schema.users).values([
-    { userId: 1, email: "doctor1@sakha.com", role: "STAFF", createdAt: new Date() },
-    { userId: 2, email: "patient1@sakha.com", role: "PATIENT", createdAt: new Date() },
-    { userId: 3, email: "staff1@sakha.com", role: "STAFF", createdAt: new Date() },
-  ]).onConflictDoNothing();
+  const insertedUsers = await db.insert(schema.users).values([
+    { email: "doctor1@sakha.com", role: "STAFF", createdAt: new Date() },
+    { email: "patient1@sakha.com", role: "PATIENT", createdAt: new Date() },
+    { email: "staff1@sakha.com", role: "STAFF", createdAt: new Date() },
+  ]).onConflictDoNothing().returning();
+
+  // حماية: إذا كانت البيانات موجودة مسبقاً، نوقف العملية لتجنب الأخطاء
+  if (insertedUsers.length === 0) {
+    console.log("⚠️ البيانات موجودة مسبقاً! قم بتنظيف قاعدة البيانات (Truncate) إذا أردت إعادة البذر.");
+    process.exit(0);
+  }
+
+  const [docUser, patUser, staffUser] = insertedUsers;
 
   // 2. جدول العيادات (Clinics)
   console.log("🏢 بذر جدول العيادات...");
-  await db.insert(schema.clinics).values([
-    { clinicId: 1, name: "عيادة الشفاء التخصصية" },
-    { clinicId: 2, name: "مركز الأمل الطبي" },
-  ]).onConflictDoNothing();
+  const insertedClinics = await db.insert(schema.clinics).values([
+    { name: "عيادة الشفاء التخصصية" },
+    { name: "مركز الأمل الطبي" },
+  ]).onConflictDoNothing().returning();
+  const mainClinic = insertedClinics[0];
 
   // 3. جدول التخصصات (Specializations)
   console.log("🩺 بذر جدول التخصصات...");
-  await db.insert(schema.specializations).values([
-    { specializationId: 1, name: "جراحة عامة", description: "تخصص الجراحة العامة والمناظير" },
-    { specializationId: 2, name: "أطفال", description: "طب الأطفال وحديثي الولادة" },
-    { specializationId: 3, name: "باطنية وقلب", description: "أمراض الباطنية والقلب والأوعية" },
-  ]).onConflictDoNothing();
+  const insertedSpecs = await db.insert(schema.specializations).values([
+    { name: "جراحة عامة", description: "تخصص الجراحة العامة والمناظير" },
+    { name: "أطفال", description: "طب الأطفال وحديثي الولادة" },
+    { name: "باطنية وقلب", description: "أمراض الباطنية والقلب والأوعية" },
+  ]).onConflictDoNothing().returning();
+  const surgerySpec = insertedSpecs[0];
+  const heartSpec = insertedSpecs[2];
 
   // 4. جدول الأطباء (Doctors)
   console.log("🥼 بذر جدول الأطباء...");
-  await db.insert(schema.doctors).values([
+  const insertedDoctors = await db.insert(schema.doctors).values([
     {
-      doctorId: 8,
-      userId: 1,
-      clinicId: 1,
+      userId: docUser.userId,
+      clinicId: mainClinic.clinicId,
       fullName: "د. أحمد عبدالله",
       phone: "+967733333333",
       yearsOfExperience: 8,
       bio: "استشاري جراحة عامة ومناظير، خبرة طويلة في المستشفيات التعليمية.",
-      status: "active",
+      status: "ACTIVE",
     },
-  ]).onConflictDoNothing();
+  ]).onConflictDoNothing().returning();
+  const doctor = insertedDoctors[0];
 
-  // 5. جدول المرضى (Patients) - تصحيح: حذف dateOfBirth وحذف المصفوفة من النوع
+  // 5. جدول المرضى (Patients)
   console.log("🩹 بذر جدول المرضى...");
-  await db.insert(schema.patients).values([
+  const insertedPatients = await db.insert(schema.patients).values([
     {
-      patientId: 1,
-      userId: 2,
+      userId: patUser.userId,
       fullName: "خالد محمد انيس",
       phone: "+967771234567",
-      gender: "male", // يتوافق مع الخيارات 'male' | 'female' | 'other'
+      gender: "male",
     }
-  ]).onConflictDoNothing();
+  ]).onConflictDoNothing().returning();
+  const patient = insertedPatients[0];
 
-  // 6. جدول الموظفين (Staff) - تصحيح: تغييره من role إلى position
+  // 6. جدول الموظفين (Staff)
   console.log("💼 بذر جدول الموظفين...");
   await db.insert(schema.staff).values([
     {
-      staffId: 1,
-      userId: 3,
-      clinicId: 1,
+      userId: staffUser.userId,
+      clinicId: mainClinic.clinicId,
       fullName: "أروى صلاح (مسؤولة الاستقبال)",
       phone: "+967711223344",
-      position: "receptionist", // تصحيح للحقل المتوقع في السكيما
+      position: "receptionist",
     }
   ]).onConflictDoNothing();
 
   // 7. جدول الربط (Doctors To Specializations)
   console.log("🔗 ربط الأطباء بالتخصصات...");
   await db.insert(schema.doctorsToSpecializations).values([
-    { doctorId: 8, specializationId: 1 },
-    { doctorId: 8, specializationId: 3 },
+    { doctorId: doctor.doctorId, specializationId: surgerySpec.specializationId },
+    { doctorId: doctor.doctorId, specializationId: heartSpec.specializationId },
   ]).onConflictDoNothing();
 
-  // 8. جدول أوقات الدوام (Doctor Availability) - تصحيح: dayOfWeek يتوقع number من 1 لـ 7
+  // 8. جدول أوقات الدوام (Doctor Availability)
   console.log("📅 بذر مواعيد توفر الأطباء...");
   await db.insert(schema.doctorAvailability).values([
-    { availabilityId: 1, doctorId: 8, dayOfWeek: 1, startTime: "09:00:00", endTime: "13:00:00" }, // 1 للـ Sunday مثلاً
-    { availabilityId: 2, doctorId: 8, dayOfWeek: 3, startTime: "16:00:00", endTime: "20:00:00" },
+    { doctorId: doctor.doctorId, dayOfWeek: 1, startTime: "09:00:00", endTime: "13:00:00" },
+    { doctorId: doctor.doctorId, dayOfWeek: 3, startTime: "16:00:00", endTime: "20:00:00" },
   ]).onConflictDoNothing();
 
-  // 9. جدول المواعيد (Appointments) - تصحيح: يتوقع نصوص للمواعيد والساعات
-  console.log("📆 بذر جدول الحجوزات والمواعيد...");
-  await db.insert(schema.appointments).values([
+  // 🚀 [الجدول الجديد] 9. جدول الاستثناءات والإجازات الطارئة (Doctor Exceptions)
+  console.log("🚨 بذر استثناءات الدوام والإجازات الطارئة...");
+  await db.insert(schema.doctorExceptions).values([
     {
-      appointmentId: 1,
-      patientId: 1,
-      doctorId: 8,
-      clinicId: 1,
-      appointmentDate: "2026-06-01", // تصحيح: نص متوقع
-      appointmentTime: "10:00:00",    // تصحيح: إضافة حقل الوقت المستقل
-      status: "pending",
-      notes: "حالة فحص روتينية مستعجلة",
+      doctorId: doctor.doctorId,
+      clinicId: mainClinic.clinicId,
+      specificDate: "2026-05-20", // إجازة تجريبية لتاريخ محدد
+      isClosed: true,
+      reason: "نعتذر لكم، العيادة مغلقة غداً الأربعاء لظروف طارئة خارجة عن إرادتنا."
     }
   ]).onConflictDoNothing();
 
-  // 10. جدول التقييمات (Reviews) - تصحيح: حذف doctorId لأن العلاقة تأتي من الـ appointmentId مباشرة
+  // 10. جدول المواعيد (Appointments)
+  console.log("📆 بذر جدول الحجوزات والمواعيد...");
+  const insertedAppointments = await db.insert(schema.appointments).values([
+    {
+      patientId: patient.patientId,
+      doctorId: doctor.doctorId,
+      clinicId: mainClinic.clinicId,
+      appointmentDate: "2026-06-01", 
+      appointmentTime: "10:00:00",    
+      status: "PENDING",
+      notes: "حالة فحص روتينية مستعجلة",
+    }
+  ]).onConflictDoNothing().returning();
+  const appointment = insertedAppointments[0];
+
+  // 11. جدول التقييمات (Reviews)
   console.log("⭐ بذر جدول التقييمات...");
   await db.insert(schema.reviews).values([
     {
-      reviewId: 1,
-      appointmentId: 1,
-      patientId: 1,
+      appointmentId: appointment.appointmentId,
+      patientId: patient.patientId,
       rating: 5,
-      comment: "طبيب ممتاز جداً ومتعاون والشرح مسطح ونظيف المظهر!",
+      comment: "طبيب ممتاز جداً ومتعاون والشرح مبسط ونظيف المظهر!",
     }
   ]).onConflictDoNothing();
 
-  // 11. جدول الإشعارات (Notifications)
+  // 12. جدول الإشعارات (Notifications)
   console.log("🔔 بذر جدول الإشعارات...");
   await db.insert(schema.notifications).values([
     {
-      notificationId: 1,
-      userId: 1,
+      userId: docUser.userId,
       title: "حجز جديد",
       message: "تم تسجيل حجز جديد باسم المريض خالد محمد",
       isRead: false,
     },
   ]).onConflictDoNothing();
 
-// ==========================================
-  // 12. جداول الرموز (Auth & Refresh Tokens)
+  // ==========================================
+  // 13. جداول الرموز (Auth & Refresh Tokens)
   // ==========================================
   console.log("🔑 بذر جداول توكنات الأمان...");
   await db.insert(schema.authTokens).values([
     { 
-      id: "11111111-2222-3333-4444-555555555555", // 👈 صيغة UUID حقيقية وصالحة للفحص
       email: "doctor1@sakha.com", 
       role : "ADMIN",
       tokenHash: "sample_access_token_for_doctor", 
@@ -146,13 +165,13 @@ async function main() {
 
   await db.insert(schema.refreshTokens).values([
     { 
-      id: "66666666-7777-8888-9999-000000000000", // 👈 صيغة UUID حقيقية وصالحة للفحص
-      userId: 1, 
+      userId: docUser.userId, 
       tokenHash: "sample_refresh_token_for_doctor", 
       expiresAt: new Date("2027-12-31") 
     }
   ]).onConflictDoNothing();
-  console.log("🏆 تم التوافق التام مع الـ Types بنجاح 0 أخطاء!");
+  
+  console.log("🏆 تم التوافق التام مع الـ Types ومعمارية قاعدة البيانات بنجاح وبدون أخطاء تضارب!");
   await pool.end();
 }
 

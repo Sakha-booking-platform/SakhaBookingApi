@@ -1,10 +1,7 @@
 import { IsString, IsOptional, IsNumber, IsEnum, IsArray, IsNotEmpty } from 'class-validator';
+import { DoctorStatus } from 'src/availability/enum/doctor_status';
 
-export enum DoctorStatusEnum {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  SUSPENDED = 'suspended',
-}
+
 
 export class UpdateDoctorProfileDto {
   @IsString()
@@ -27,9 +24,9 @@ export class UpdateDoctorProfileDto {
   @IsOptional()
   bio?: string;
 
-  @IsEnum(DoctorStatusEnum)
+  @IsEnum(DoctorStatus)
   @IsOptional()
-  status?: DoctorStatusEnum;
+  status?: DoctorStatus;
 
   @IsArray()
   @IsNumber({}, { each: true })

@@ -17,13 +17,13 @@ import { relations } from 'drizzle-orm';
 
 
 export const roleEnum = pgEnum("role", ["ADMIN", "DOCTOR", "PATIENT", "STAFF"]);
-export const statusEnum = pgEnum("status", ["active", "inactive", "suspended"]);
+export const statusEnum = pgEnum("status", ["ACTIVE", "INACTIVE", "SUSPENDED"]);
 export const appointmentStatusEnum = pgEnum("appointment_status", [
-  "pending", 
-  "confirmed", 
-  "cancelled", 
-  "completed", 
-  "no_show"
+  "PENDING", 
+  "CONFIRMED", 
+  "CANCELLED", 
+  "COMPLETED", 
+  "NO_SHOW"
 ]);
 export const genderEnum = pgEnum("gender", ["male", "female", "other"]);
 
@@ -59,7 +59,7 @@ export const doctors = pgTable("doctors", {
   phone: text("phone"),
   yearsOfExperience: integer("years_of_experience"),
   bio: text("bio"), 
-  status: statusEnum("status").default("active"),
+  status: statusEnum("status").default("ACTIVE"),
 });
 
 export const doctorsToSpecializations = pgTable("doctors_to_specializations", { 
@@ -92,15 +92,18 @@ export const patients = pgTable("patients", {
   address: text("address"),
 });
 
+
 export const appointments = pgTable("appointments", {
   appointmentId: serial("appointment_id").primaryKey(),
-  patientId: integer("patient_id").references(() => patients.patientId , { onDelete: "set null" }),
-  doctorId: integer("doctor_id").references(() => doctors.doctorId , { onDelete: "set null" }),
-  clinicId: integer("clinic_id").references(() => clinics.clinicId , { onDelete: "set null" }),
+  patientId: integer("patient_id").references(() => patients.patientId, { onDelete: "set null" }),
+  doctorId: integer("doctor_id").references(() => doctors.doctorId, { onDelete: "set null" }),
+  clinicId: integer("clinic_id").references(() => clinics.clinicId, { onDelete: "set null" }),
+  availabilityId: integer("availability_id").references(() => doctorAvailability.availabilityId, { onDelete: "set null" }),
   appointmentDate: date("appointment_date").notNull(),
   appointmentTime: time("appointment_time").notNull(),
+  periodType: text("period_type"), // 'morning' أو 'evening'
   queueNumber: integer("queue_number"),
-  status: appointmentStatusEnum("status").default("pending"),
+  status: appointmentStatusEnum("status").default("PENDING"),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -124,8 +127,27 @@ export const doctorAvailability = pgTable("doctor_availability", {
   endTime: time("end_time").notNull(),
   maxPatients: integer("max_patients"),
 }, (table) => ({
-  uniqAvailability: unique().on(table.doctorId, table.clinicId, table.dayOfWeek),
-}));
+uniqAvailability: unique().on(table.doctorId, table.clinicId, table.dayOfWeek, table.startTime),}));
+
+
+export const doctorExceptions = pgTable("doctor_exceptions", {
+  exceptionId: serial("exception_id").primaryKey(),
+  doctorId: integer("doctor_id").references(() => doctors.doctorId, { onDelete: "cascade" }),
+  clinicId: integer("clinic_id").references(() => clinics.clinicId, { onDelete: "cascade" }),
+  
+  // التاريخ المحدد للاستثناء (مثلاً: 2026-05-22 وهو يوم جمعة)
+  specificDate: date("specific_date").notNull(),
+  
+  // هل العيادة مغلقة في هذا التاريخ؟
+  isClosed: boolean("is_closed").default(false).notNull(),
+  
+  // إذا لم تكن مغلقة، هل هناك أوقات دوام خاصة بهذا اليوم تحديداً؟ (اختياري)
+  startTime: time("start_time"),
+  endTime: time("end_time"),
+  
+  // سبب الإجازة أو التعديل (مثال: "إجازة عيد العمال" أو "دوام تعويضي")
+  reason: text("reason"),
+});
 
 export const reviews = pgTable("reviews", {
   reviewId: serial("review_id").primaryKey(),

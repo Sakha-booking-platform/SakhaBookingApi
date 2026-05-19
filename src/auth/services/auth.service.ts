@@ -83,7 +83,7 @@ export class AuthService {
     async generateTokens(userId: number, email: string, role: string, dbInstance: any = db) {
         const accessToken = this.jwtService.sign(
             { id: userId, email: email, role: role },
-            { expiresIn: '15m' }
+            { expiresIn: '15d' }
         );
 
         const rawRefreshToken = this.tokenService.generateToken();
@@ -167,4 +167,6 @@ export class AuthService {
             role: user.role,
         };
     }
+
+    
 }

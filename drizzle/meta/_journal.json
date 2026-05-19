@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779099691126,
-      "tag": "0000_lean_black_bolt",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1779100075245,
-      "tag": "0001_right_roulette",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1779100177542,
-      "tag": "0002_crazy_prism",
+      "when": 1779217485256,
+      "tag": "0000_spotty_king_bedlam",
       "breakpoints": true
     }
   ]

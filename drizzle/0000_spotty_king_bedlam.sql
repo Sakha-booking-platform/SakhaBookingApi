@@ -1,16 +1,18 @@
-CREATE TYPE "public"."appointment_status" AS ENUM('pending', 'confirmed', 'cancelled', 'completed', 'no_show');--> statement-breakpoint
+CREATE TYPE "public"."appointment_status" AS ENUM('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW');--> statement-breakpoint
 CREATE TYPE "public"."gender" AS ENUM('male', 'female', 'other');--> statement-breakpoint
 CREATE TYPE "public"."role" AS ENUM('ADMIN', 'DOCTOR', 'PATIENT', 'STAFF');--> statement-breakpoint
-CREATE TYPE "public"."status" AS ENUM('active', 'inactive', 'suspended');--> statement-breakpoint
+CREATE TYPE "public"."status" AS ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED');--> statement-breakpoint
 CREATE TABLE "appointments" (
 	"appointment_id" serial PRIMARY KEY NOT NULL,
 	"patient_id" integer,
 	"doctor_id" integer,
 	"clinic_id" integer,
+	"availability_id" integer,
 	"appointment_date" date NOT NULL,
 	"appointment_time" time NOT NULL,
+	"period_type" text,
 	"queue_number" integer,
-	"status" "appointment_status" DEFAULT 'pending',
+	"status" "appointment_status" DEFAULT 'PENDING',
 	"notes" text,
 	"created_at" timestamp DEFAULT now()
 );
@@ -18,7 +20,7 @@ CREATE TABLE "appointments" (
 CREATE TABLE "auth_tokens" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" text NOT NULL,
-	"role" "role" NOT NULL,
+	"role" "role" DEFAULT 'PATIENT' NOT NULL,
 	"token_hash" text NOT NULL,
 	"used" boolean DEFAULT false NOT NULL,
 	"expires_at" timestamp NOT NULL,
@@ -44,7 +46,18 @@ CREATE TABLE "doctor_availability" (
 	"start_time" time NOT NULL,
 	"end_time" time NOT NULL,
 	"max_patients" integer,
-	CONSTRAINT "doctor_availability_doctor_id_clinic_id_day_of_week_unique" UNIQUE("doctor_id","clinic_id","day_of_week")
+	CONSTRAINT "doctor_availability_doctor_id_clinic_id_day_of_week_start_time_unique" UNIQUE("doctor_id","clinic_id","day_of_week","start_time")
+);
+--> statement-breakpoint
+CREATE TABLE "doctor_exceptions" (
+	"exception_id" serial PRIMARY KEY NOT NULL,
+	"doctor_id" integer,
+	"clinic_id" integer,
+	"specific_date" date NOT NULL,
+	"is_closed" boolean DEFAULT false NOT NULL,
+	"start_time" time,
+	"end_time" time,
+	"reason" text
 );
 --> statement-breakpoint
 CREATE TABLE "doctors" (
@@ -55,7 +68,7 @@ CREATE TABLE "doctors" (
 	"phone" text,
 	"years_of_experience" integer,
 	"bio" text,
-	"status" "status" DEFAULT 'active'
+	"status" "status" DEFAULT 'ACTIVE'
 );
 --> statement-breakpoint
 CREATE TABLE "doctors_to_specializations" (
@@ -123,7 +136,7 @@ CREATE TABLE "staff" (
 CREATE TABLE "users" (
 	"user_id" serial PRIMARY KEY NOT NULL,
 	"email" text NOT NULL,
-	"role" "role" DEFAULT 'patient' NOT NULL,
+	"role" "role" DEFAULT 'PATIENT' NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
@@ -131,8 +144,11 @@ CREATE TABLE "users" (
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_patient_id_patients_patient_id_fk" FOREIGN KEY ("patient_id") REFERENCES "public"."patients"("patient_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_doctor_id_doctors_doctor_id_fk" FOREIGN KEY ("doctor_id") REFERENCES "public"."doctors"("doctor_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_clinic_id_clinics_clinic_id_fk" FOREIGN KEY ("clinic_id") REFERENCES "public"."clinics"("clinic_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "appointments" ADD CONSTRAINT "appointments_availability_id_doctor_availability_availability_id_fk" FOREIGN KEY ("availability_id") REFERENCES "public"."doctor_availability"("availability_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "doctor_availability" ADD CONSTRAINT "doctor_availability_doctor_id_doctors_doctor_id_fk" FOREIGN KEY ("doctor_id") REFERENCES "public"."doctors"("doctor_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "doctor_availability" ADD CONSTRAINT "doctor_availability_clinic_id_clinics_clinic_id_fk" FOREIGN KEY ("clinic_id") REFERENCES "public"."clinics"("clinic_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "doctor_exceptions" ADD CONSTRAINT "doctor_exceptions_doctor_id_doctors_doctor_id_fk" FOREIGN KEY ("doctor_id") REFERENCES "public"."doctors"("doctor_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "doctor_exceptions" ADD CONSTRAINT "doctor_exceptions_clinic_id_clinics_clinic_id_fk" FOREIGN KEY ("clinic_id") REFERENCES "public"."clinics"("clinic_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "doctors" ADD CONSTRAINT "doctors_user_id_users_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "doctors" ADD CONSTRAINT "doctors_clinic_id_clinics_clinic_id_fk" FOREIGN KEY ("clinic_id") REFERENCES "public"."clinics"("clinic_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "doctors_to_specializations" ADD CONSTRAINT "doctors_to_specializations_doctor_id_doctors_doctor_id_fk" FOREIGN KEY ("doctor_id") REFERENCES "public"."doctors"("doctor_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
