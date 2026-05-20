@@ -28,4 +28,12 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsString({ message: 'الملاحظات يجب أن تكون نصاً' })
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  paymentReference?: string;
+
+  @IsOptional()
+  @IsString()
+  paymentAttachment?: string;
 }

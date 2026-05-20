@@ -10,15 +10,31 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { SocketModule } from './socket/socket.module';
+import { UploadModule } from './upload/upload.module';
 
-@Module({  
+@Module({
   imports: [
-      ConfigModule.forRoot({
+    ConfigModule.forRoot({
       isGlobal: true,
     }),
-    AuthModule, UsersModule, ProfilesModule, ClinicsModule, AvailabilityModule, AppointmentsModule, NotificationsModule , NotificationsModule],
+     AuthModule,
+     UsersModule, 
+     ProfilesModule, 
+     ClinicsModule, 
+     AvailabilityModule, 
+     AppointmentsModule, 
+     NotificationsModule, 
+     NotificationsModule, 
+     ReviewsModule, 
+     ReviewsModule,
+     SocketModule,
+     UploadModule,
+     UploadModule
+    ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
 // trigger recompile
