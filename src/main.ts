@@ -2,11 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { WsAdapter } from '@nestjs/platform-ws'; // 👈 1. استيراد الـ Adapter الجديد
 import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
+  // 👈 2. تفعيل الـ WebSockets النقية على مستوى المشروع بالكامل ليتحرر من قيود الـ Prefix
+  app.useWebSocketAdapter(new WsAdapter(app)); 
+
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -14,20 +18,15 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
 
+app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  prefix: '/uploads/',
+});
+
   app.enableCors({
-    // origin: "http://localhost:5000"
     origin: true,
     credentials: true,
   });
-
-  // app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-  //   prefix: '/uploads/',
-  // });
-
-  // const documentation = SwaggerModule.createDocument(app, swaggerConfig);
-  // SwaggerModule.setup("swagger", app, documentation);
   
-  await app.listen( 3000, '0.0.0.0');
+  await app.listen(3000, '0.0.0.0');
 }
 bootstrap();
- 

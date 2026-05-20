@@ -5,16 +5,17 @@ import { and, eq, or, count, inArray, desc, sql } from 'drizzle-orm';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dtos/update-appointment-status.dto';
 import { AppointmentStatus } from './enum/appointmentStatus';
+import { SocketGateway } from 'src/socket/socket.gateway';
 
 @Injectable()
 export class AppointmentsService {
     private readonly db = db;
-    constructor() { }
-
-    async bookAppointment(dto: CreateAppointmentDto) {
+    constructor(
+        private readonly socketGateway: SocketGateway,
+    ) { }
+async bookAppointment(dto: CreateAppointmentDto) {
         return await this.db.transaction(async (tx: any) => {
 
-            // 1️⃣ التحقق من وجود الطبيب وحالته
             const doctor = await tx.select()
                 .from(schema.doctors)
                 .where(eq(schema.doctors.doctorId, dto.doctorId))
@@ -23,7 +24,24 @@ export class AppointmentsService {
             if (doctor.length === 0) throw new NotFoundException('الطبيب غير موجود');
             if (doctor[0].status !== 'ACTIVE') throw new BadRequestException('الطبيب غير متاح حالياً');
 
-            // 2️⃣ التحقق من الإجازات الطارئة (Doctor Exceptions)
+            const doctorClinic = await tx.select({
+                requiresPrepayment: schema.clinics.requiresPrepayment,
+                paymentInstructions: schema.clinics.paymentInstructions,
+            })
+                .from(schema.clinics)
+                .where(eq(schema.clinics.clinicId, dto.clinicId))
+                .limit(1);
+
+            if (doctorClinic.length === 0) throw new NotFoundException('العيادة المطلوبة غير موجودة');
+             
+            const clinicPolicy = doctorClinic[0];
+
+            if (clinicPolicy.requiresPrepayment && !dto.paymentReference) {
+                throw new BadRequestException(
+                    `هذه العيادة تتطلب الدفع المسبق لتأكيد الحجز. يرجى تحويل المبلغ أولاً وإدخال رقم مرجع الحوالة. تعليمات العيادة: ${clinicPolicy.paymentInstructions}`
+                );
+            }
+
             const emergencyHoliday = await tx.select()
                 .from(schema.doctorExceptions)
                 .where(
@@ -40,11 +58,8 @@ export class AppointmentsService {
                 throw new BadRequestException(`العيادة مغلقة طارئاً: ${emergencyHoliday[0].reason}`);
             }
 
-            // 3️⃣ 🛡️ [الشرط الأمني الجديد] فحص سقف الحجوزات النشطة للمريض 🛡️
-
-            // الحالات التي تعتبر الحجز "نشطاً ومعلقاً" في النظام
-            const activeStatuses = ['PENDING', 'CONFIRMED'] as const;
-            // أ) الفحص على مستوى النظام (جميع العيادات)
+            const activeStatuses = [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED] as const;
+            
             const totalActiveAppointments = await tx.select({ value: count() })
                 .from(schema.appointments)
                 .where(
@@ -58,7 +73,6 @@ export class AppointmentsService {
                 throw new BadRequestException('عذراً، لقد وصلت للحد الأقصى المسموح به للحجوزات النشطة في النظام (3 حجوزات كحد أقصى للـ حساب الواحد)');
             }
 
-            // ب) الفحص على مستوى العيادة المحددة نفسها
             const clinicActiveAppointments = await tx.select({ value: count() })
                 .from(schema.appointments)
                 .where(
@@ -73,9 +87,9 @@ export class AppointmentsService {
                 throw new BadRequestException('عذراً، لديك بالفعل 3 حجوزات نشطة في هذه العيادة. لا يمكنك إضافة حجز جديد حتى يتم استكمال أو إلغاء أحدها.');
             }
 
-            // 4️⃣ التحقق من توفر وقت الدوام الرسمي واقتناص الـ availabilityId
+            
             const dateObj = new Date(dto.appointmentDate);
-            const dayOfWeek = dateObj.getDay() + 1;
+            const dayOfWeek = dateObj.getUTCDay(); 
 
             const availability = await tx.select()
                 .from(schema.doctorAvailability)
@@ -99,7 +113,6 @@ export class AppointmentsService {
                 throw new BadRequestException(`وقت الحجز خارج ساعات العمل (${startTime} - ${endTime})`);
             }
 
-            // 5️⃣ التحقق من التعارض (هل الوقت محجوز مسبقاً من مريض آخر؟)
             const conflictingAppointment = await tx.select()
                 .from(schema.appointments)
                 .where(
@@ -117,7 +130,6 @@ export class AppointmentsService {
                 throw new ConflictException('هذا الموعد محجوز مسبقاً، اختر وقتاً آخر.');
             }
 
-            // 6️⃣ حساب رقم الدور تلقائياً (Queue Number) لهذا اليوم
             const existingAppointmentsCount = await tx.select({ value: count() })
                 .from(schema.appointments)
                 .where(
@@ -129,11 +141,9 @@ export class AppointmentsService {
 
             const nextQueueNumber = (existingAppointmentsCount[0]?.value || 0) + 1;
 
-            // 7️⃣ تحديد نوع الفترة تلقائياً (Period Type)
             const hour = parseInt(reqTime.split(':')[0], 10);
             const periodType = hour < 12 ? 'morning' : 'evening';
 
-            // 8️⃣ إدخال الحجز الفعلي بعد اجتياز كل الفحوصات الأمنية بنجاح
             const [newAppointment] = await tx.insert(schema.appointments).values({
                 patientId: dto.patientId,
                 doctorId: dto.doctorId,
@@ -145,9 +155,11 @@ export class AppointmentsService {
                 queueNumber: nextQueueNumber,
                 status: 'PENDING',
                 notes: dto.notes || null,
+                paymentReference: dto.paymentReference || null,
+                paymentAttachment: dto.paymentAttachment || null,
+                isPaymentVerified: false,
             }).returning();
 
-            // 9️⃣ إرسال الإشعار
             await tx.insert(schema.notifications).values([
                 {
                     userId: doctor[0].userId,
@@ -159,7 +171,9 @@ export class AppointmentsService {
 
             return {
                 success: true,
-                message: 'تم الحجز بنجاح واجتياز فحص مكافحة التلاعب وتكرار الحجوزات.',
+                message: clinicPolicy.requiresPrepayment 
+                    ? 'تم رفع طلب الحجز بنجاح وإرسال إثبات الدفع، يرجى انتظار تأكيد السكرتيرة.' 
+                    : 'تم الحجز بنجاح في انتظار حضورك للعيادة.',
                 data: newAppointment
             };
         });
@@ -284,7 +298,6 @@ export class AppointmentsService {
         };
     }
 
-
     async updateAppointmentStatus(appointmentId: number, newStatus: UpdateAppointmentStatusDto) {
         return await this.db.transaction(async (tx) => {
 
@@ -308,7 +321,7 @@ export class AppointmentsService {
             const currentStatus = appointment[0].status;
 
             // 2️⃣ 🛡️ [حماية منطق العمل]: منع التلاعب بالحجوزات المنتهية
-            // إذا كان الحجز ملغياً أو مكتملاً أو سجل غياب بالفعل， فلا يجوز تعديله مجدداً
+            // إذا كان الحجز ملغياً أو مكتملاً أو سجل غياب بالفعل، فلا يجوز تعديله مجدداً
             if (currentStatus === AppointmentStatus.CANCELLED || currentStatus === AppointmentStatus.COMPLETED || currentStatus === AppointmentStatus.NO_SHOW) {
                 throw new BadRequestException(`لا يمكن تعديل حالة هذا الحجز لأنه مغلق حالياً بحالة (${currentStatus})`);
             }
@@ -331,7 +344,8 @@ export class AppointmentsService {
 
             if (patientUser.length > 0 && patientUser[0].userId) {
                 let title = '🔄 تحديث في موعدك';
-                let message = `تم تغيير حالة موعدك بتاريخ ${appointment[0].appointmentDate} إلى ${newStatus}`;
+                // تعديل بسيط هنا لعرض قيمة الحالة النصية بدلاً من كائن الـ Dto بالكامل
+                let message = `تم تغيير حالة موعدك بتاريخ ${appointment[0].appointmentDate} إلى ${newStatus.status}`;
 
                 // تخصيص رسائل احترافية تظهر في الإشعارات للمريض
                 if (newStatus.status === AppointmentStatus.CONFIRMED) {
@@ -355,56 +369,63 @@ export class AppointmentsService {
                 });
             }
 
+            const roomName = `patient_room_${patientId}`;
+            this.socketGateway.emitToRoom(roomName, 'appointment_status_changed', {
+                appointmentId: updatedAppointment.appointmentId,
+                status: updatedAppointment.status,
+            });
+
             return {
                 success: true,
-                message: `تم تحديث حالة الحجز بنجاح من (${currentStatus}) إلى (${newStatus}) وإشعار المريض.`,
+                // تعديل هنا لعرض القيمة النصية لـ newStatus.status بشكل صحيح في الرسالة النهائية
+                message: `تم تحديث حالة الحجز بنجاح من (${currentStatus}) إلى (${newStatus.status}) وإشعار المريض وبث التحديث بالوقت الفعلي.`,
                 data: updatedAppointment,
             };
         });
     }
 
     async getAppointmentById(appointmentId: number) {
-  const appointment = await this.db.select({
-    appointmentId: schema.appointments.appointmentId,
-    appointmentDate: schema.appointments.appointmentDate,
-    appointmentTime: schema.appointments.appointmentTime,
-    periodType: schema.appointments.periodType,
-    queueNumber: schema.appointments.queueNumber,
-    status: schema.appointments.status,
-    notes: schema.appointments.notes,
-    createdAt: schema.appointments.createdAt,
-    doctor: {
-      doctorId: schema.doctors.doctorId,
-      fullName: schema.doctors.fullName
-    },
-    clinic: {
-      clinicId: schema.clinics.clinicId,
-      name: schema.clinics.name,
-      location: schema.clinics.location
+        const appointment = await this.db.select({
+            appointmentId: schema.appointments.appointmentId,
+            appointmentDate: schema.appointments.appointmentDate,
+            appointmentTime: schema.appointments.appointmentTime,
+            periodType: schema.appointments.periodType,
+            queueNumber: schema.appointments.queueNumber,
+            status: schema.appointments.status,
+            notes: schema.appointments.notes,
+            createdAt: schema.appointments.createdAt,
+            doctor: {
+                doctorId: schema.doctors.doctorId,
+                fullName: schema.doctors.fullName
+            },
+            clinic: {
+                clinicId: schema.clinics.clinicId,
+                name: schema.clinics.name,
+                location: schema.clinics.location
+            }
+        })
+            .from(schema.appointments)
+            .leftJoin(schema.doctors, eq(schema.appointments.doctorId, schema.doctors.doctorId))
+            .leftJoin(schema.clinics, eq(schema.appointments.clinicId, schema.clinics.clinicId))
+            .where(eq(schema.appointments.appointmentId, appointmentId))
+            .limit(1);
+
+        if (appointment.length === 0) {
+            throw new NotFoundException('الحجز المطلوب غير موجود');
+        }
+
+        return { success: true, data: appointment[0] };
     }
-  })
-  .from(schema.appointments)
-  .leftJoin(schema.doctors, eq(schema.appointments.doctorId, schema.doctors.doctorId))
-  .leftJoin(schema.clinics, eq(schema.appointments.clinicId, schema.clinics.clinicId))
-  .where(eq(schema.appointments.appointmentId, appointmentId))
-  .limit(1);
 
-  if (appointment.length === 0) {
-    throw new NotFoundException('الحجز المطلوب غير موجود');
-  }
+    /**
+     * 🏥 2. جلب جميع حجوزات عيادة معينة (لوحة تحكم السكرتارية / Staff)
+     */
+    async getClinicAppointments(clinicId: number) {
+        const data = await this.db.select()
+            .from(schema.appointments)
+            .where(eq(schema.appointments.clinicId, clinicId))
+            .orderBy(desc(schema.appointments.appointmentDate));
 
-  return { success: true, data: appointment[0] };
-}
-
-/**
- * 🏥 2. جلب جميع حجوزات عيادة معينة (لوحة تحكم السكرتارية / Staff)
- */
-async getClinicAppointments(clinicId: number) {
-  const data = await this.db.select()
-    .from(schema.appointments)
-    .where(eq(schema.appointments.clinicId, clinicId))
-    .orderBy(desc(schema.appointments.appointmentDate));
-
-  return { success: true, count: data.length, data };
-}
+        return { success: true, count: data.length, data };
+    }
 }
