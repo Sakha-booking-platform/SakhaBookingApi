@@ -9,13 +9,14 @@ import { AppController } from './app.controller';
 import { ProfilesModule } from './profiles/profiles.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { AppointmentsModule } from './appointments/appointments.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({  
   imports: [
       ConfigModule.forRoot({
       isGlobal: true,
     }),
-    AuthModule, UsersModule, ProfilesModule, ClinicsModule, AvailabilityModule, AppointmentsModule],
+    AuthModule, UsersModule, ProfilesModule, ClinicsModule, AvailabilityModule, AppointmentsModule, NotificationsModule , NotificationsModule],
   controllers: [AppController],
   providers: [AppService],
 })
