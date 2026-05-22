@@ -1,113 +1,10 @@
+# Sakha Api Documentation
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
-
-
-
-
-
-
-
-
-
-
-# sino Project Documentation
 
 <p align="center">
   <a href="https://nestjs.com/" target="_blank"><img src="https://img.shields.io/badge/Framework-NestJS%20v11-E0234E?style=flat&logo=nestjs" alt="NestJS" /></a>
@@ -134,7 +31,7 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
 ## Description
 
-Dori is a production-grade, multi-sector appointment scheduling and queue management platform engine built on top of NestJS and structured around Clean Architecture principles. Engineered to replace legacy, rigid booking scripts, Dori delivers an enterprise-ready API tailored for medical clinics, service hubs, and fast-paced commercial facilities.
+Sakha is a production-grade, multi-sector appointment scheduling and queue management platform engine built on top of NestJS and structured around Clean Architecture principles. Engineered to replace legacy, rigid booking scripts, Sakha delivers an enterprise-ready API tailored for medical clinics, service hubs, and fast-paced commercial facilities.
 
 At its core, the platform transitions businesses from unverified offline booking methods into an automated, verified, and transparent operational workflow.
 
@@ -172,8 +69,6 @@ $ npm run start:dev
 # Run in debug mode with watch capabilities
 $ npm run start:debug
 
-# Execute the pre-compiled application production build
-$ npm run start:prod
 ```
 
 ---
@@ -184,7 +79,7 @@ The project utilizes Drizzle ORM to maintain schemas and apply data structures a
 
 ### Local Development (Assuming Local PostgreSQL Setup)
 
-If you have a local PostgreSQL instance running and configured, you can execute Drizzle ORM commands directly:
+If you have a *local PostgreSQL* instance running and configured, you can execute Drizzle ORM commands directly:
 
 ```bash
 # Generate SQL delta migration files based on schema changes
@@ -199,29 +94,25 @@ $ npm run db:push
 # Populate the target local database tables with baseline seed data
 $ npm run db:seed
 
-# Launch Drizzle Studio graphical browser management console (access at http://localhost:4983)
-$ npm run db:studio
 ```
 
 ### Docker Environment
 
-When running your project within a Docker environment, Drizzle ORM commands need to be executed inside the `sakha_api` service container, which has direct access to the database service (`sakha_postgres`).
+When running your project within a Docker environment, Drizzle ORM commands need to be executed inside the `api` service container, which has direct access to the database service (`sakha_postgres`).
 
 ```bash
 # Generate SQL delta migration files based on schema changes
-$ docker compose exec sakha_api npm run db:generate
+$ docker compose exec api npm run db:generate
 
 # Execute and apply generated SQL migrations directly to the Docker database
-$ docker compose exec sakha_api npm run db:migrate
+$ docker compose exec api npm run db:migrate
 
 # Push local schema modifications directly to the Docker database (for rapid prototyping)
-$ docker compose exec sakha_api npm run db:push
+$ docker compose exec api npm run db:push
 
 # Populate the target Docker database tables with baseline seed data
-$ docker compose exec sakha_api npm run db:seed
+$ docker compose exec api npm run db:seed
 
-# Launch Drizzle Studio graphical browser management console (access at http://localhost:4983 after running)
-$ docker compose exec sakha_api npm run db:studio
 ```
 
 ### 💡 Quick Engineering Tip (First-time Setup Order):
@@ -308,44 +199,8 @@ RESEND_API_KEY=re_d5JFy4DQ_BNC6tL64fZTz8PPcGB2J5Q4x
 APP_URL=http://localhost:3000/auth/verify/
 ```
 
-> **Security Note:** Never commit the actual `.env` file into version control repositories (`Git`). Ensure `.env` is listed inside your `.gitignore` profile to safeguard live environment keys and production bank parameters.
-
-### ⚠️ Critical Programming Alert (Name Conflict)
-
-In your current settings, it's written:
-
-*   In `DATABASE_URL`, the database name is: **`sakha_booking_db`**
-*   In `POSTGRES_DB`, the database name is: **`algonaid`**
-
-**The structural error here:** When Docker first starts the PostgreSQL container, it will create an empty database with the name specified in `POSTGRES_DB` (i.e., `algonaid`). When the NestJS server attempts to connect using the link in `DATABASE_URL`, it will look for `sakha_booking_db` and will not find it, leading to the server failing to start and the Docker container immediately crashing!
-
 ---
 
-### 🛠️ Correct and Final `.env` File Preparation
-
-Create a file named **`.env`** in the project's root directory (next to `package.json`) and write the variables inside it as follows, after unifying them for the booking platform:
-
-```env
-# 🐘 1. PostgreSQL & Database Connection Configuration
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=sakha_booking_db
-
-# Unified connection URL read by Drizzle ORM inside the container
-DATABASE_URL="postgresql://postgres:postgres@sakha_postgres:5432/sakha_booking_db?schema=public"
-
-# 🔑 2. Security & Authentication Tokens (JWT)
-JWT_SECRET=your_very_secure_secret_here
-JWT_EXPIRES_SECRET=1d
-
-# ✉️ 3. Mailing Service (Resend API)
-RESEND_API_KEY=re_d5JFy4DQ_BNC6tL64fZTz8PPcGB2J5Q4x
-
-# 🌐 4. Application Routing Defaults
-APP_URL=http://localhost:3000/auth/verify/
-```
-
----
 
 ### 📘 Detailed Explanation of Each Variable (How the Server and Docker Read Them)
 
@@ -362,9 +217,24 @@ APP_URL=http://localhost:3000/auth/verify/
 
 This project integrates Swagger for comprehensive API documentation, allowing developers to easily understand and interact with the API endpoints. Once the application is running, you can access the Swagger UI at:
 
-`http://localhost:3000/api`
+`http://localhost:3000/docs`
 
 This interface provides detailed information about each endpoint, including request/response schemas, authentication methods, and example values.
+
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following software installed on your system:
+
+*   **Node.js:** `v18.x` or higher
+*   **npm:** `v8.x` or higher (comes with Node.js)
+*   **Docker:** Latest stable version
+*   **Docker Compose:** Latest stable version
+*   **PostgreSQL:** (Optional, for local development without Docker) `v14.x` or higher
+
+---
+
 
 ---
 
@@ -470,22 +340,28 @@ sakha_booking_api/
         ├── conistants.ts
         ├── messages.ts
         └── types.ts
-```
+``` 
 
----
+## 🛠️ Developer Profile
 
-## Prerequisites
+### Bashar Al-himyary
+**Technical Team Leader & System Architect**
 
-Before you begin, ensure you have the following software installed on your system:
+<p align="left">
+  <a href="https://github.com/BashargalalAlhimyari" target="_blank">
+    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="Github Profile" />
+  </a>
+  <a href="https://www.linkedin.com/in/bashar-galal-alhimyari-1204603a9?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank">
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn Profile" />
+  </a>
+</p>
 
-*   **Node.js:** `v18.x` or higher
-*   **npm:** `v8.x` or higher (comes with Node.js)
-*   **Docker:** Latest stable version
-*   **Docker Compose:** Latest stable version
-*   **PostgreSQL:** (Optional, for local development without Docker) `v14.x` or higher
+### 📞 Contact Information
 
----
+* **📧 Email:** bashargalal77@gmail.com
+* **📱 Phone:** [+967 772971739](tel:+967772971739)
+* **📍 Location:** Taiz, Yemen
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
