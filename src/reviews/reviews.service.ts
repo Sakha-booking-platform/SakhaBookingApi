@@ -24,12 +24,12 @@ export class ReviewsService {
         .limit(1);
 
       if (appointment.length === 0) {
-        throw new NotFoundException('الحجز المطلوب غير موجود أو لا ينتمي لهذا المريض');
+        throw new NotFoundException('Requested appointment not found or does not belong to this patient');
       }
 
       // 2. 🛡️ الشرط الصارم: يجب أن تكون حالة الحجز COMPLETED
       if (appointment[0].status !== 'COMPLETED') {
-        throw new BadRequestException('لا يمكن تقييم الطبيب إلا بعد إتمام الزيارة وكتابة الحجز كـ COMPLETED');
+        throw new BadRequestException('Doctor can only be reviewed after the visit is completed and marked as COMPLETED');
       }
 
       // 3. 🛡️ منع التكرار: التحقق مما إذا كان هذا الحجز قد تم تقييمه مسبقاً (Unique Constraint)
@@ -39,7 +39,7 @@ export class ReviewsService {
         .limit(1);
 
       if (existingReview.length > 0) {
-        throw new ConflictException('لقد قمت بوضع تقييم لهذا الحجز مسبقاً، لا يمكن تكرار التقييم لنفس الزيارة');
+        throw new ConflictException('You have already submitted a review for this appointment. Duplicate reviews for the same visit are not allowed');
       }
 
       // 4. إدخال التقييم الجديد في قاعدة البيانات
@@ -51,8 +51,7 @@ export class ReviewsService {
       }).returning();
 
       return {
-        success: true,
-        message: 'تم تسجيل تقييمك بنجاح، شكراً لك!',
+        message: 'Your review has been submitted successfully. Thank you!',
         data: newReview
       };
     });
@@ -66,7 +65,7 @@ async getDoctorReviews(doctorId: number) {
       .limit(1);
 
     if (doctorExists.length === 0) {
-      throw new NotFoundException('الطبيب المطلوب غير موجود في النظام');
+      throw new NotFoundException('Requested doctor not found in the system');
     }
 
     // 2. جلب قائمة التقييمات مع أسماء المرضى (عبر ربط جدول الحجوزات بجدول المراجعات والمرضى)
@@ -93,12 +92,13 @@ async getDoctorReviews(doctorId: number) {
       : 0.0;
 
     return {
-      success: true,
-      message: 'تم جلب تقييمات الطبيب بنجاح',
-      doctorId,
-      averageRating, // مثال: 4.8
-      totalReviews,  // مثال: 15 تقييم
-      data: reviewsList
+      message: 'Doctor reviews retrieved successfully',
+      data: {
+        doctorId,
+        averageRating,
+        totalReviews,
+        records: reviewsList
+      }
     };
   }
   async deleteReview(reviewId: number) {
@@ -109,7 +109,7 @@ async getDoctorReviews(doctorId: number) {
       .limit(1);
 
     if (review.length === 0) {
-      throw new NotFoundException('التقييم المطلوب غير موجود في النظام أو تم حذفه مسبقاً');
+      throw new NotFoundException('Requested review not found in the system or has already been deleted');
     }
 
     // 2. الحذف الفعلي للتقييم من قاعدة البيانات
@@ -117,8 +117,8 @@ async getDoctorReviews(doctorId: number) {
       .where(eq(schema.reviews.reviewId, reviewId));
 
     return {
-      success: true,
-      message: 'تم حذف التقييم بنجاح وإزالته من سجلات الطبيب',
+      message: 'Review successfully deleted and removed from the doctor records',
+      data: null
     };
   }
 }

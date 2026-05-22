@@ -19,10 +19,11 @@ export class NotificationsService {
     const unreadCount = data.filter((notif: any) => !notif.isRead).length;
 
     return {
-      success: true,
-      message: 'تم جلب الإشعارات بنجاح',
-      unreadCount,
-      data,
+      message: 'Notifications retrieved successfully',
+      data: {
+        unreadCount,
+        records: data,
+      },
     };
   }
 
@@ -35,7 +36,7 @@ export class NotificationsService {
       .limit(1);
 
     if (exists.length === 0) {
-      throw new NotFoundException('الإشعار المطلوب غير موجود');
+      throw new NotFoundException('Requested notification not found');
     }
 
     // التحديث
@@ -45,8 +46,7 @@ export class NotificationsService {
       .returning();
 
     return {
-      success: true,
-      message: 'تم تحديث حالة الإشعار إلى مقروء بنجاح',
+      message: 'Notification successfully marked as read',
       data: updated,
     };
   }
@@ -58,8 +58,8 @@ export class NotificationsService {
       .where(eq(schema.notifications.userId, userId));
 
     return {
-      success: true,
-      message: 'تم تحويل جميع الإشعارات إلى مقروءة بنجاح',
+      message: 'All notifications successfully marked as read',
+      data: null
     };
   }
 }

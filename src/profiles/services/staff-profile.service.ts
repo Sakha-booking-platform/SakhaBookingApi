@@ -15,7 +15,7 @@ export class StaffProfileService {
       throw new NotFoundException('Staff profile not found');
     }
 
-    return profile;
+    return { message: 'Staff profile retrieved successfully', data: profile };
   }
 
   async updateProfile(userId: number, dto: UpdateStaffProfileDto) {
@@ -35,7 +35,7 @@ export class StaffProfileService {
         .where(eq(staff.userId, userId))
         .returning();
       
-      return updated[0];
+      return { message: 'Staff profile updated successfully', data: updated[0] };
     }
 
     const created = await db
@@ -49,6 +49,6 @@ export class StaffProfileService {
       })
       .returning();
 
-    return created[0];
+    return { message: 'Staff profile created successfully', data: created[0] };
   }
 }

@@ -4,7 +4,15 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { AvailabilityService } from './availability.service';
 import { SetAvailabilityDto } from './dto/set-availability.dto';
 import { CreateEmergencyHolidayDto } from './dto/create-emergency-holiday.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { 
+  SetMyAvailabilitySwagger, 
+  GetDoctorAvailabilitySwagger, 
+  GetDoctorCalendarSwagger, 
+  HandleEmergencyHolidaySwagger 
+} from './decorators/availability.swagger';
 
+@ApiTags('Availability')
 @Controller('availability')
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}
@@ -12,12 +20,14 @@ export class AvailabilityController {
   // 1. للطبيب: لكي يقوم بإدخال أو تحديث مواعيده الدورية (فترة أو فترتين في نفس اليوم)
   @Post()
   @UseGuards(AuthGuard)
+  @SetMyAvailabilitySwagger()
   async setMyAvailability(@CurrentUser() user: any, @Body() dto: SetAvailabilityDto) {
     return this.availabilityService.setAvailability(user.id, dto); 
   }
 
   // 2. للوحة التحكم أو الفحص السريع: تجلب القواعد الثابتة الخام كما هي في الداتا بيز
   @Get('doctor/:doctorId')
+  @GetDoctorAvailabilitySwagger()
   async getDoctorAvailability(@Param('doctorId', ParseIntPipe) doctorId: number) {
     return this.availabilityService.getDoctorAvailability(doctorId);
   }
@@ -25,6 +35,7 @@ export class AvailabilityController {
   // 🚀 الزيادة الجوهرية (للمريض): تجلب تقويم حقيقي ممتد لـ 30 يوماً بناءً على قواعد الطبيب
   // مثال الاستدعاء: GET /availability/doctor/5/calendar?days=30
   @Get('doctor/:doctorId/calendar')
+  @GetDoctorCalendarSwagger()
   async getDoctorCalendar(
     @Param('doctorId', ParseIntPipe) doctorId: number,
     @Query('days') days?: number
@@ -33,8 +44,9 @@ export class AvailabilityController {
     return this.availabilityService.getDoctorCalendar(doctorId, limitDays);
   }
 
- @Post('exceptions')
+  @Post('exceptions')
   @HttpCode(HttpStatus.CREATED)
+  @HandleEmergencyHolidaySwagger()
   async handleEmergencyHoliday(@Body() dto: CreateEmergencyHolidayDto) {
     return this.availabilityService.createEmergencyHoliday(dto);
   }

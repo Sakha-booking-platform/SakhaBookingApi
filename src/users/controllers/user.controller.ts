@@ -8,7 +8,16 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { UserRole } from 'src/auth/enums/userRole';
 import { AuthRollGuard } from 'src/auth/guards/auth-roll.guard';
 import { userRoles } from 'src/auth/decorators/user_roll.decorator';
+import { ApiTags } from '@nestjs/swagger';
+import {
+  CreateUserSwagger,
+  GetUserByIdSwagger,
+  GetUserByEmailSwagger,
+  UpsertProfileSwagger,
+  GetAllUsersSwagger,
+} from '../decorators/users.swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(
@@ -16,22 +25,26 @@ export class UsersController {
   ) {}
 
   @Post()
+  @CreateUserSwagger()
   async createUser(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
   }
 
   @Get(':id')
+  @GetUserByIdSwagger()
   async getUserById(@Param('id') id: String) {
     return await this.usersService.findById(id);
   }
 
   @Get('search/email')
-  async getUserByEmail(@Query('email') user: FindUserByEmailDto) {
+  @GetUserByEmailSwagger()
+  async getUserByEmail(@Query() user: FindUserByEmailDto) {
     return await this.usersService.findByEmail(user.email);
   }
 
   @UseGuards(AuthGuard)
   @Post('profile')
+  @UpsertProfileSwagger()
   async upsertProfile(
       @CurrentUser() user: any,
       @Body() dto: CreatePatientProfileDto,
@@ -42,8 +55,8 @@ export class UsersController {
 
   @Get('admin/all-users')
   @UseGuards(AuthRollGuard)
-   @userRoles(UserRole.ADMIN)
-
+  @userRoles(UserRole.ADMIN)
+  @GetAllUsersSwagger()
   async getAllUsers() {
     return this.usersService.findAllUsersForAdmin();
   }

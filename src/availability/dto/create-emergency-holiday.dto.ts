@@ -1,23 +1,27 @@
 import { IsNotEmpty, IsNumber, IsString, Matches } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateEmergencyHolidayDto {
-  @IsNotEmpty({ message: 'معرف الطبيب مطلوب' })
-  @IsNumber({}, { message: 'معرف الطبيب يجب أن يكون رقماً' })
+  @ApiProperty({ description: 'ID of the doctor', example: 1 })
+  @IsNotEmpty({ message: 'Doctor ID is required' })
+  @IsNumber({}, { message: 'Doctor ID must be a number' })
   doctorId: number;
 
-  @IsNotEmpty({ message: 'معرف العيادة مطلوب' })
-  @IsNumber({}, { message: 'معرف العيادة يجب أن يكون رقماً' })
+  @ApiProperty({ description: 'ID of the clinic', example: 1 })
+  @IsNotEmpty({ message: 'Clinic ID is required' })
+  @IsNumber({}, { message: 'Clinic ID must be a number' })
   clinicId: number;
 
-  @IsNotEmpty({ message: 'التاريخ المحدّد مطلوب' })
-  @IsString({ message: 'التاريخ يجب أن يكون نصاً' })
-  // 🛡️ تعبير نمطي (Regex) يضمن أن يرسل الفرونت إند التاريخ بصيغة YYYY-MM-DD حصراً
+  @ApiProperty({ description: 'Specific date for the emergency holiday in YYYY-MM-DD format', example: '2026-05-20' })
+  @IsNotEmpty({ message: 'Specific date is required' })
+  @IsString({ message: 'Specific date must be a string' })
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {
-    message: 'التاريخ يجب أن يكون بالصيغة الصحيحة YYYY-MM-DD مثل 2026-05-20',
+    message: 'Date must be in standard YYYY-MM-DD format (e.g. 2026-05-20)',
   })
   specificDate: string;
 
-  @IsNotEmpty({ message: 'سبب الإجازة الطارئة مطلوب' })
-  @IsString({ message: 'السبب يجب أن يكون نصاً' })
+  @ApiProperty({ description: 'Reason for the emergency holiday', example: 'Personal emergency' })
+  @IsNotEmpty({ message: 'Emergency reason is required' })
+  @IsString({ message: 'Reason must be a string' })
   reason: string;
 }

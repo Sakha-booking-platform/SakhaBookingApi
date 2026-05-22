@@ -37,7 +37,10 @@ export class AuthService {
 
         await this.emailService.sendMagicLink(email, rawToken);
 
-        return { message: 'Login link sent' };
+        return { 
+            message: 'OTP has been sent successfully', 
+            data: { email, expiresIn: 300 } 
+        };
     }
 
     async verifyToken(dto: VerifyTokenDto) {
@@ -73,12 +76,24 @@ export class AuthService {
         console.log("User found for email:", tokenRecord.email, user);
 
         if (!user) {
-            user = await this.usersService.create({
+            const created = await this.usersService.create({
                 email: tokenRecord.email,
             });
+            user = created.data;
         }
 
-        return this.generateTokens(Number(user.userId), user.email, user.role);
+        const tokens = await this.generateTokens(Number(user.userId), user.email, user.role);
+        return {
+            message: 'Login successful',
+            data: {
+                ...tokens,
+                user: {
+                    id: user.userId,
+                    email: user.email,
+                    role: user.role
+                }
+            }
+        };
     }
     async generateTokens(userId: number, email: string, role: string, dbInstance: any = db) {
         const accessToken = this.jwtService.sign(
@@ -135,7 +150,10 @@ export class AuthService {
 
             const tokens = await this.generateTokens(user.userId, user.email, user.role, tx);
 
-            return tokens;
+            return {
+                message: 'Token refreshed successfully',
+                data: tokens
+            };
         });
     }
 
@@ -153,18 +171,21 @@ export class AuthService {
 
         if (result.length > 1) {
             console.warn(`Warning: Multiple active sessions revoked for user ID ${userId}.`);
-            return { message: 'Logged out from all devices successfully' };
+            return { message: 'Logged out from all devices successfully', data: null };
         }
 
-        return { message: 'Logged out successfully' };
+        return { message: 'Logged out successfully', data: null };
     }
     async getCurrentUser(user: any) {
 
         console.log("Current User Payload:", user);
         return {
-            id: user.id,
-            email: user.email,
-            role: user.role,
+            message: 'Profile retrieved successfully',
+            data: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+            }
         };
     }
 

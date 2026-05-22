@@ -6,6 +6,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from '../services/auth.service';
 
@@ -19,7 +20,15 @@ from '../dto/verify-token.dto';
 import { AuthGuard } from '../guards/auth.guard';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import {
+  RequestLoginSwagger,
+  VerifyTokenSwagger,
+  RefreshTokenSwagger,
+  CurrentUserSwagger,
+  LogoutSwagger,
+} from '../decorators/auth.swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
 
@@ -28,6 +37,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @RequestLoginSwagger()
   async requestLogin(
     @Body() dto: RequestLoginDto,
   ) {
@@ -35,6 +45,7 @@ export class AuthController {
   }
 
   @Post('verify')
+  @VerifyTokenSwagger()
   async verify(
     @Body() dto: VerifyTokenDto,
   ) {
@@ -42,12 +53,14 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @RefreshTokenSwagger()
   async refresh(
     @Body() dto: RefreshTokenDto,
   ) {
     return this.authService.refresh(dto);
   }
 
+  @CurrentUserSwagger()
   @UseGuards(AuthGuard)
   @Get('me')
   async currentUser(
@@ -56,6 +69,7 @@ export class AuthController {
     return this.authService.getCurrentUser(user);
   }
 
+  @LogoutSwagger()
   @UseGuards(AuthGuard)
   @Post('logout')
   async logout(

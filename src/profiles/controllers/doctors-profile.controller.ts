@@ -5,18 +5,24 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { FlattenDoctorProfileInterceptor } from '../interceptors/flatten-doctor-profile.interceptor'; 
  
+import { ApiTags } from '@nestjs/swagger';
+import { GetDoctorProfileSwagger, UpdateDoctorProfileSwagger } from '../decorators/profiles.swagger';
+
+@ApiTags('Doctor Profiles')
 @Controller('doctors/profile')
 @UseGuards(AuthGuard)
 export class DoctorsProfileController {
   constructor(private readonly doctorsProfileService: DoctorsProfileService) {}
 
   @Get()
-@UseInterceptors(FlattenDoctorProfileInterceptor)
+  @UseInterceptors(FlattenDoctorProfileInterceptor)
+  @GetDoctorProfileSwagger()
   async getProfile(@CurrentUser() user: any) {
     return this.doctorsProfileService.getProfile(user.id);
   }
 
   @Put()
+  @UpdateDoctorProfileSwagger()
   async updateProfile( 
     @CurrentUser() user: any,
     @Body() dto: UpdateDoctorProfileDto,

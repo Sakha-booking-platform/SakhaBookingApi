@@ -5,7 +5,16 @@ import { CreateSpecializationDto } from './dto/create-specialization.dto';
 import { AuthRollGuard } from 'src/auth/guards/auth-roll.guard';
 import { UserRole } from 'src/auth/enums/userRole';
 import { userRoles } from 'src/auth/decorators/user_roll.decorator';
+import { ApiTags } from '@nestjs/swagger';
+import { 
+  GetAllClinicsSwagger, 
+  GetClinicDetailsSwagger, 
+  GetAllSpecializationsSwagger, 
+  CreateClinicSwagger, 
+  CreateSpecializationSwagger 
+} from './decorators/clinics.swagger';
 
+@ApiTags('Clinics')
 @Controller('clinics')
 export class ClinicsController {
   constructor(private readonly clinicsService: ClinicsService) {}
@@ -19,6 +28,7 @@ export class ClinicsController {
    * متاح للجميع (مرضى، زوار) لاستكشاف العيادات
    */
   @Get()
+  @GetAllClinicsSwagger()
   async getAllClinics() {
     return this.clinicsService.findAllClinics();
   }
@@ -28,6 +38,7 @@ export class ClinicsController {
    * (يعيد تفاصيل العيادة مع الأطباء التابعين لها)
    */
   @Get(':id')
+  @GetClinicDetailsSwagger()
   async getClinicDetails(@Param('id', ParseIntPipe) id: number) {
     return this.clinicsService.findClinicDetails(id);
   }
@@ -37,6 +48,7 @@ export class ClinicsController {
    * يحتاجها الـ Frontend لعرضها في قوائم الفلترة والبحث
    */
   @Get('specializations/all')
+  @GetAllSpecializationsSwagger()
   async getAllSpecializations() {
     return this.clinicsService.findAllSpecializations();
   }
@@ -53,6 +65,7 @@ export class ClinicsController {
   @Post()
   @UseGuards(AuthRollGuard)
   @userRoles(UserRole.ADMIN)
+  @CreateClinicSwagger()
   async createClinic(@Body() createClinicDto: CreateClinicDto) {
     return this.clinicsService.createClinic(createClinicDto);
   }
@@ -64,6 +77,7 @@ export class ClinicsController {
   @Post('specializations')
   @UseGuards(AuthRollGuard)
   @userRoles(UserRole.ADMIN)
+  @CreateSpecializationSwagger()
   async createSpecialization(@Body() createSpecDto: CreateSpecializationDto) {
     return this.clinicsService.createSpecialization(createSpecDto);
   }

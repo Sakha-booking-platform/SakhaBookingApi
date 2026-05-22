@@ -48,7 +48,7 @@ export class AuthRollGuard implements CanActivate {
             throw new UnauthorizedException(MESSAGES.AUTH.ACCESS_DENIED_USER_NOT_FOUND);
         }
 
-        if (rolls.includes(user.role)) {
+        if (rolls.includes(user.data.role)) {
             request[CURRENT_USER_KEY] = user;
 
             return true;

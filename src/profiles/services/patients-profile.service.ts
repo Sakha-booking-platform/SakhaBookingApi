@@ -19,7 +19,7 @@ export class PatientsProfileService {
       throw new NotFoundException('Patient profile not found');
     }
 
-    return profile;
+    return { message: 'Patient profile retrieved successfully', data: profile };
   }
 
   async updateProfile(userId: number, dto: UpdatePatientProfileDto) {
@@ -40,7 +40,7 @@ export class PatientsProfileService {
         .where(eq(patients.userId, userId))
         .returning();
       
-      return updated[0];
+      return { message: 'Patient profile updated successfully', data: updated[0] };
     }
 
     const created = await db
@@ -55,6 +55,6 @@ export class PatientsProfileService {
       })
       .returning();
 
-    return created[0];
+    return { message: 'Patient profile created successfully', data: created[0] };
   }
 }

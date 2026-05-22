@@ -22,7 +22,7 @@ export class DoctorsProfileService {
             throw new NotFoundException('Doctor profile not found');
         }
 
-        return profile;
+        return { message: 'Doctor profile retrieved successfully', data: profile };
     }
 
     async updateProfile(userId: number, dto: UpdateDoctorProfileDto) {
@@ -79,7 +79,7 @@ export class DoctorsProfileService {
                 }
             }
 
-            return doctor;
+            return { message: 'Doctor profile updated successfully', data: doctor };
         });
     }
 } 

@@ -1,11 +1,13 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { AppointmentStatus } from '../enum/appointmentStatus';
 
 export class UpdateAppointmentStatusDto {
-  @IsNotEmpty({ message: 'حالة الحجز (status) حقل مطلوب ولا يمكن تركه فارغاً' })
-  @IsString({ message: 'الحالة يجب أن تكون قيمة نصية صالحة' })
+  @ApiProperty({ description: 'New status for the appointment', enum: AppointmentStatus, example: AppointmentStatus.CONFIRMED })
+  @IsNotEmpty({ message: 'Appointment status (status) is required and cannot be empty' })
+  @IsString({ message: 'Status must be a valid string' })
   @IsEnum([AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED, AppointmentStatus.CANCELLED, AppointmentStatus.COMPLETED, AppointmentStatus.NO_SHOW], {
-    message: 'الحالة المرسلة غير مدعومة! يجب أن تكون حصراً إحدى القيم التالية: PENDING, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW',
+    message: 'Unsupported status! Must be one of: PENDING, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW',
   })
   status: AppointmentStatus.PENDING | AppointmentStatus.CONFIRMED | AppointmentStatus.CANCELLED | AppointmentStatus.COMPLETED | AppointmentStatus.NO_SHOW;
 }

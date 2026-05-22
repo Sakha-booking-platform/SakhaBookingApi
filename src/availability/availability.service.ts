@@ -19,7 +19,7 @@ export class AvailabilityService {
     });
 
     if (!doctorRecord) {
-      throw new NotFoundException('لم يتم العثور على ملف طبيب مرتبط بهذا الحساب.');
+      throw new NotFoundException('Doctor profile associated with this account not found.');
     }
 
     const realDoctorId = doctorRecord.doctorId;
@@ -51,19 +51,20 @@ export class AvailabilityService {
           maxPatients: item.maxPatients || 20,
         }));
 
-        await tx.insert(doctorAvailability).values(records).returning();
-        return { message: 'تم تحديث المواعيد بنجاح.' };
+        const insertedRecords = await tx.insert(doctorAvailability).values(records).returning();
+        return { message: 'Availability updated successfully.', data: insertedRecords };
       }
       
-      return { message: 'تم تحديث المواعيد بنجاح، لا توجد مواعيد جديدة لإدراجها.' };
+      return { message: 'Availability updated successfully, no new availability to insert.', data: null };
     });
   }
 
   // 2. جلب القواعد الخام الثابتة للطبيب (مفيدة للوحة تحكم الطبيب نفسه)
   async getDoctorAvailability(doctorId: number) {
-    return await db.query.doctorAvailability.findMany({
+    const data = await db.query.doctorAvailability.findMany({
       where: eq(doctorAvailability.doctorId, doctorId),
     });
+    return { message: 'Doctor availability retrieved successfully', data };
   }
 
   // 🚀 الميزة الاحترافية: توليد تقويم حقيقي مرن ومدمج بالاستثناءات والعطل للمريض
@@ -159,7 +160,7 @@ export class AvailabilityService {
     }
 
     // يعود بالمصفوفة كاملة وجاهزة لتطبيق الـ Flutter
-    return calendar;
+    return { message: 'Doctor calendar retrieved successfully', data: calendar };
   
 }
 
@@ -204,8 +205,8 @@ export class AvailabilityService {
       }
 
       return {
-        message: "تم إغلاق اليوم بنجاح، وإلغاء الحجوزات القائمة، وجاري إرسال الاعتذارات للمرضى.",
-        cancelledCount: affectedAppointments.length
+        message: "Emergency holiday created successfully, existing appointments cancelled, and notifications are being sent.",
+        data: { cancelledCount: affectedAppointments.length }
       };
     });
   }

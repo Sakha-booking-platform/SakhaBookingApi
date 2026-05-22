@@ -2,7 +2,10 @@ import { Controller, Post, UseInterceptors, UploadedFile, BadRequestException } 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { ApiTags } from '@nestjs/swagger';
+import { UploadImageSwagger } from './decorators/upload.swagger';
 
+@ApiTags('Uploads')
 @Controller('upload')
 export class UploadController {
   
@@ -21,7 +24,7 @@ export class UploadController {
       fileFilter: (req, file, callback) => {
         // قبول صور الامتدادات الشهيرة فقط لحماية السيرفر
         if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-          return callback(new BadRequestException('فقط الصور من نوع (png, jpg, jpeg, webp) مسموح بها!'), false);
+          return callback(new BadRequestException('Only images of type (png, jpg, jpeg, webp) are allowed!'), false);
         }
         callback(null, true);
       },
@@ -30,17 +33,19 @@ export class UploadController {
       },
     }),
   )
+  @UploadImageSwagger()
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('لم يتم إرسال أي ملف');
+      throw new BadRequestException('No file was uploaded');
     }
 
     // إرجاع الرابط المباشر للصورة لكي يحفظه مطور الفلاتر في قاعدة البيانات
     const fileUrl = `http://localhost:3000/uploads/${file.filename}`;
     return {
-      success: true,
-      message: 'تم رفع الصورة بنجاح',
-      url: fileUrl, // 👈 هذا الرابط الذي سيتم إرساله مع الحجز أو بيانات الطبيب
+      message: 'Image uploaded successfully',
+      data: {
+        url: fileUrl, // 👈 هذا الرابط الذي سيتم إرساله مع الحجز أو بيانات الطبيب
+      }
     };
   }
 }

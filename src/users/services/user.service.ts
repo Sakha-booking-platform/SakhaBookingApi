@@ -9,34 +9,32 @@ import { CreatePatientProfileDto } from '../dto/create-patient-profile.dto';
 export class UsersService {
 
     async findByEmail(email: string) {
-        if (!email) throw new BadRequestException('البريد الإلكتروني مطلوب للبحث');
+        if (!email) throw new BadRequestException('Email is required for search');
 
         const user = await db.query.users.findFirst({
             where: eq(users.email, email),
         });
 
         if (!user) {
-            throw new NotFoundException(`المستخدم ذو البريد ${email} غير موجود`);
+            throw new NotFoundException(`User with email ${email} not found`);
         }
-        return user;
+        return { message: 'User found successfully', data: user };
     }
 
     async findById(id: String) {
         const numericId = Number(id);
-        // احتمال: إذا لم يكن المعرف رقماً صالحاً
         if (isNaN(numericId)) {
-            throw new BadRequestException('المعرف (ID) يجب أن يكون رقماً صالحاً');
+            throw new BadRequestException('ID must be a valid number');
         }
 
         const user = await db.query.users.findFirst({
             where: eq(users.userId, numericId)
         });
 
-        // احتمال: المستخدم غير موجود
         if (!user) {
-            throw new NotFoundException(`المستخدم ذو الرقم ${id} غير موجود`);
+            throw new NotFoundException(`User with ID ${id} not found`);
         }
-        return user;
+        return { message: 'User found successfully', data: user };
     }
 
     async create(data: CreateUserDto) {
@@ -47,7 +45,7 @@ export class UsersService {
             })
             .returning();
 
-        return user;
+        return { message: 'User created successfully', data: user };
     }
 
 
@@ -72,8 +70,8 @@ export class UsersService {
                 .returning();
 
             return {
-                message: 'Patient profile updated',
-                patient: updated,
+                message: 'Patient profile updated successfully',
+                data: updated,
             };
         }
 
@@ -91,14 +89,14 @@ export class UsersService {
             .returning();
 
         return {
-            message: 'Patient profile created',
-            patient: created,
+            message: 'Patient profile created successfully',
+            data: created,
         };
     }
 
 
     async findAllUsersForAdmin() {
-        return await db
+        const allUsers = await db
             .select({
                 id: users.userId,
                 email: users.email,
@@ -125,6 +123,8 @@ export class UsersService {
             .leftJoin(doctors, eq(users.userId, doctors.userId))
             .leftJoin(patients, eq(users.userId, patients.userId))
             .leftJoin(staff, eq(users.userId, staff.userId));
+            
+        return { message: 'Users retrieved successfully', data: allUsers };
     }
 
 

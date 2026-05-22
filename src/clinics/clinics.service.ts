@@ -18,7 +18,7 @@ export class ClinicsService {
    */
   async findAllClinics() {
     try {
-      return await db
+      const data = await db
         .select({
           id: schema.clinics.clinicId,
           name: schema.clinics.name,
@@ -27,8 +27,10 @@ export class ClinicsService {
 
         })
         .from(schema.clinics);
+        
+      return { message: 'Clinics retrieved successfully', data };
     } catch (error) {
-      throw new InternalServerErrorException('حدث خطأ أثناء جلب قائمة العيادات');
+      throw new InternalServerErrorException('An error occurred while fetching the list of clinics');
     }
   }
 
@@ -43,7 +45,7 @@ export class ClinicsService {
       .limit(1);
 
     if (clinicRows.length === 0) {
-      throw new NotFoundException(`العيادة المطلوبة ذات الرقم (${clinicId}) غير موجودة في النظام`);
+      throw new NotFoundException(`The requested clinic with ID (${clinicId}) does not exist in the system`);
     }
 
     const clinic = clinicRows[0];
@@ -70,9 +72,12 @@ export class ClinicsService {
       .where(eq(schema.staff.clinicId, clinicId));
 
     return {
-      ...clinic,
-      doctors,
-      staff,
+      message: 'Clinic details retrieved successfully',
+      data: {
+        ...clinic,
+        doctors,
+        staff,
+      }
     };
   }
 
@@ -85,7 +90,7 @@ export class ClinicsService {
       .limit(1);
 
     if (existingClinic.length > 0) {
-      throw new ConflictException('رقم الهاتف هذا مسجل بالفعل لعيادة أخرى في النظام');
+      throw new ConflictException('This phone number is already registered to another clinic in the system');
     }
 
     try {
@@ -101,11 +106,11 @@ export class ClinicsService {
         .returning();
 
       return {
-        message: 'تم تسجيل العيادة الطبية الجديدة بنجاح',
-        clinic: newClinic,
+        message: 'New medical clinic registered successfully',
+        data: newClinic,
       };
     } catch (error) {
-      throw new InternalServerErrorException('فشل إدخال العيادة في قاعدة البيانات، يرجى مراجعة المدخلات');
+      throw new InternalServerErrorException('Failed to insert clinic into the database, please check the inputs');
     }
   }
 
@@ -119,9 +124,10 @@ export class ClinicsService {
    */
   async findAllSpecializations() {
     try {
-      return await db.select().from(schema.specializations);
+      const data = await db.select().from(schema.specializations);
+      return { message: 'Specializations retrieved successfully', data };
     } catch (error) {
-      throw new InternalServerErrorException('حدث خطأ أثناء جلب التخصصات الطبية');
+      throw new InternalServerErrorException('An error occurred while fetching medical specializations');
     }
   }
 
@@ -137,7 +143,7 @@ export class ClinicsService {
       .limit(1);
 
     if (existingSpec.length > 0) {
-      throw new ConflictException(`التخصص الطبي "${dto.name}" موجود بالفعل في النظام`);
+      throw new ConflictException(`The medical specialization "${dto.name}" already exists in the system`);
     }
 
     try {
@@ -150,11 +156,11 @@ export class ClinicsService {
         .returning();
 
       return {
-        message: 'تم إضافة التخصص الطبي بنجاح',
-        specialization: newSpec,
+        message: 'Medical specialization added successfully',
+        data: newSpec,
       };
     } catch (error) {
-      throw new InternalServerErrorException('فشل إضافة التخصص الطبي، حاول مرة أخرى لاحقاً');
+      throw new InternalServerErrorException('Failed to add medical specialization, please try again later');
     }
   }
 }

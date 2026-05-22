@@ -6,4 +6,4 @@ import { SocketGateway } from './socket.gateway';
   providers: [SocketGateway],
   exports: [SocketGateway], // تصديره ليكون متاحاً للاستخدام الخارجي
 })
-export class SocketModule {}
+export class SocketModule {} 

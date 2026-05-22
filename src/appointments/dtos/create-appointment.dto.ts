@@ -1,38 +1,45 @@
 import { IsNotEmpty, IsNumber, IsString, IsOptional, Matches } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateAppointmentDto {
-  @IsNotEmpty({ message: 'معرف المريض (patientId) حقل مطلوب' })
-  @IsNumber({}, { message: 'معرف المريض يجب أن يكون رقماً صحيحاً' })
+  @ApiProperty({ description: 'ID of the patient', example: 1 })
+  @IsNotEmpty({ message: 'Patient ID (patientId) is required' })
+  @IsNumber({}, { message: 'Patient ID must be a valid number' })
   patientId: number;
 
-  @IsNotEmpty({ message: 'معرف الطبيب (doctorId) حقل مطلوب' })
-  @IsNumber({}, { message: 'معرف الطبيب يجب أن يكون رقماً صحيحاً' })
+  @ApiProperty({ description: 'ID of the doctor', example: 2 })
+  @IsNotEmpty({ message: 'Doctor ID (doctorId) is required' })
+  @IsNumber({}, { message: 'Doctor ID must be a valid number' })
   doctorId: number;
 
-  @IsNotEmpty({ message: 'معرف العيادة (clinicId) حقل مطلوب' })
-  @IsNumber({}, { message: 'معرف العيادة يجب أن يكون رقماً صحيحاً' })
+  @ApiProperty({ description: 'ID of the clinic', example: 1 })
+  @IsNotEmpty({ message: 'Clinic ID (clinicId) is required' })
+  @IsNumber({}, { message: 'Clinic ID must be a valid number' })
   clinicId: number;
 
-  @IsNotEmpty({ message: 'تاريخ الحجز (appointmentDate) حقل مطلوب' })
-  @IsString({ message: 'التاريخ يجب أن يكون نصاً صالحاً' })
-  // تعبير نمطي للتأكد من إرسال التاريخ بصيغة سليم YYYY-MM-DD مثل 2026-05-20
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'التاريخ يجب أن يكون بالصيغة القياسية YYYY-MM-DD' })
+  @ApiProperty({ description: 'Date of the appointment in YYYY-MM-DD format', example: '2026-05-20' })
+  @IsNotEmpty({ message: 'Appointment date (appointmentDate) is required' })
+  @IsString({ message: 'Appointment date must be a valid string' })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'Appointment date must be in standard YYYY-MM-DD format' })
   appointmentDate: string;
 
-  @IsNotEmpty({ message: 'وقت الحجز (appointmentTime) حقل مطلوب' })
-  @IsString({ message: 'الوقت يجب أن يكون نصاً صالحاً' })
-  // تعبير نمطي للتأكد من إرسال الوقت بصيغة HH:MM:SS (ساعة:دقيقة:ثانية) متوافق مع نوع time في Postgres
-  @Matches(/^\d{2}:\d{2}:\d{2}$/, { message: 'الوقت يجب أن يكون بالصيغة القياسية أربعة وعشرون ساعة HH:MM:SS' })
+  @ApiProperty({ description: 'Time of the appointment in HH:MM:SS format', example: '14:30:00' })
+  @IsNotEmpty({ message: 'Appointment time (appointmentTime) is required' })
+  @IsString({ message: 'Appointment time must be a valid string' })
+  @Matches(/^\d{2}:\d{2}:\d{2}$/, { message: 'Appointment time must be in standard 24-hour HH:MM:SS format' })
   appointmentTime: string;
 
+  @ApiPropertyOptional({ description: 'Additional notes for the appointment', example: 'First visit' })
   @IsOptional()
-  @IsString({ message: 'الملاحظات يجب أن تكون نصاً' })
+  @IsString({ message: 'Notes must be a string' })
   notes?: string;
 
+  @ApiPropertyOptional({ description: 'Payment reference number if prepayment is required', example: 'REF123456' })
   @IsOptional()
   @IsString()
   paymentReference?: string;
 
+  @ApiPropertyOptional({ description: 'Payment attachment URL or path', example: '/uploads/receipt.png' })
   @IsOptional()
   @IsString()
   paymentAttachment?: string;
