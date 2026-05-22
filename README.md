@@ -217,7 +217,7 @@ APP_URL=http://localhost:3000/auth/verify/
 
 This project integrates Swagger for comprehensive API documentation, allowing developers to easily understand and interact with the API endpoints. Once the application is running, you can access the Swagger UI at:
 
-`http://localhost:3000/api`
+`http://localhost:3000/docs`
 
 This interface provides detailed information about each endpoint, including request/response schemas, authentication methods, and example values.
 
