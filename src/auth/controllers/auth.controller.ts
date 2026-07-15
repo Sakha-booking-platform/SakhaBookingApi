@@ -3,23 +3,25 @@ import {
   Controller,
   Get,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from '../services/auth.service';
-
-import { RequestLoginDto }
-from '../dto/request-login.dto';
-
-import { VerifyTokenDto }
-from '../dto/verify-token.dto';
-
-
-import { AuthGuard } from '../guards/auth.guard';
+import { RequestLoginDto } from '../dto/request-login.dto';
+import { VerifyTokenDto } from '../dto/verify-token.dto';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
+import { AuthGuard } from '../guards/auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import {
+  DocRequestLogin,
+  DocVerifyToken,
+  DocRefreshToken,
+  DocGetCurrentUser,
+  DocLogout,
+} from '../auth.docs';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
 
@@ -28,39 +30,34 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  async requestLogin(
-    @Body() dto: RequestLoginDto,
-  ) {
+  @DocRequestLogin()
+  async requestLogin(@Body() dto: RequestLoginDto) {
     return this.authService.requestLogin(dto);
   }
 
   @Post('verify')
-  async verify(
-    @Body() dto: VerifyTokenDto,
-  ) {
+  @DocVerifyToken()
+  async verify(@Body() dto: VerifyTokenDto) {
     return this.authService.verifyToken(dto);
   }
 
   @Post('refresh')
-  async refresh(
-    @Body() dto: RefreshTokenDto,
-  ) {
+  @DocRefreshToken()
+  async refresh(@Body() dto: RefreshTokenDto) {
     return this.authService.refresh(dto);
   }
 
   @UseGuards(AuthGuard)
   @Get('me')
-  async currentUser(
-   @CurrentUser() user: any,
-  ) {
+  @DocGetCurrentUser()
+  async currentUser(@CurrentUser() user: any) {
     return this.authService.getCurrentUser(user);
   }
 
   @UseGuards(AuthGuard)
   @Post('logout')
-  async logout(
-   @CurrentUser() user: any,
-  ) {
+  @DocLogout()
+  async logout(@CurrentUser() user: any) {
     return this.authService.logout(user.id);
   }
 }
