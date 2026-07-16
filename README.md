@@ -1,3 +1,80 @@
+# Sakha Booking API 🏥
+
+This is the backend API for the **Sakha Booking System**, built with [NestJS](https://nestjs.com/), [Drizzle ORM](https://orm.drizzle.team/), PostgreSQL, and Docker.
+
+## 🚀 Getting Started
+
+Follow these instructions to set up the project locally on your machine.
+
+### 1. Prerequisites
+- **Docker** and **Docker Compose** installed on your machine.
+- Node.js (v18+) and npm (optional, if you want to run it outside Docker).
+
+### 2. Environment Variables (.env) ⚙️
+Before running the project, you MUST create a `.env` file in the root directory. You can copy the provided `.env.example`:
+```bash
+cp .env.example .env
+```
+
+Open the `.env` file and fill in the following values:
+
+```env
+POSTGRES_USER=sakha_user
+POSTGRES_PASSWORD=sakha_password
+POSTGRES_DB=sakha_db
+DATABASE_URL=postgres://sakha_user:sakha_password@db:5432/sakha_db
+JWT_SECRET=Your_Super_Secret_Key_Here
+
+# Email Sending (Resend)
+RESEND_API_KEY=re_your_api_key_here
+```
+
+⚠️ **CRITICAL: Setting up Resend (Email Service)**
+The API uses [Resend](https://resend.com/) to send Magic Links for authentication. 
+1. Go to [Resend.com](https://resend.com) and create a free account.
+2. Go to **API Keys** and generate a new key.
+3. Paste the key into your `.env` file as `RESEND_API_KEY`.
+4. **Important Note on Free Accounts:** If you haven't verified a custom domain on Resend, they will restrict you to sending emails **ONLY to the email address you registered your Resend account with**. 
+   - *Example:* If you signed up to Resend using `myemail@gmail.com`, you MUST use `myemail@gmail.com` when testing the Login endpoint in Swagger. Otherwise, Resend will reject the email.
+
+### 3. Running the Application (Docker) 🐳
+To start the database and the NestJS API server together, run:
+
+```bash
+docker compose up -d
+```
+*Note: If you ever change the `.env` file later, you MUST run `docker compose up -d --force-recreate api` to apply the new variables.*
+
+### 4. Database Setup 🗄️
+Once the containers are running, you need to push the database schema to create the tables in PostgreSQL:
+
+```bash
+docker compose exec api npm run db:push
+```
+
+### 5. Accessing the API (Swagger) 📖
+The API is fully documented using Swagger UI. Once the server is running, you can explore and test all endpoints directly from your browser:
+
+👉 **Swagger URL:** [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+
+## 🔑 Authentication Flow (How to Login)
+This API uses passwordless authentication (Magic Links).
+1. Open **Swagger** in your browser.
+2. Go to the **Auth** section and find `POST /auth/login`.
+3. Enter your email and role (e.g., `PATIENT`). *(Remember to use your Resend registered email if you don't have a verified domain!)*
+4. Check your email inbox. You will receive a Magic Link containing a secure token.
+5. Copy the token from the link (or click it if the frontend is connected).
+6. Go back to Swagger, find `POST /auth/verify`, and enter the token.
+7. You will receive an `access_token`.
+8. Scroll to the top of Swagger, click the green **Authorize** button, and paste your `access_token` to unlock the protected routes.
+
+
+---
+<br/>
+<br/>
+
+# Official NestJS Documentation Below
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
