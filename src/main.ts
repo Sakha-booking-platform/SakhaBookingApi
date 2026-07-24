@@ -8,26 +8,30 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+
   // 👈 2. تفعيل الـ WebSockets النقية على مستوى المشروع بالكامل ليتحرر من قيود الـ Prefix
-  app.useWebSocketAdapter(new WsAdapter(app)); 
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
-app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-  prefix: '/uploads/',
-});
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   app.enableCors({
-    origin: true,
+    origin: '*', // ⭐ يسمح لكل المصادر (للتطوير فقط)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
     credentials: true,
   });
-  
+
   const config = new DocumentBuilder()
     .setTitle('Sakha API')
     .setDescription('Sakha Booking API documentation')

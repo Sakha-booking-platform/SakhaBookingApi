@@ -38,7 +38,8 @@ Creates a new appointment after passing a series of business-rule checks:
       schema: {
         example: {
           success: true,
-          message: 'Appointment booked successfully. Please arrive at the clinic on time.',
+          message:
+            'Appointment booked successfully. Please arrive at the clinic on time.',
           data: {
             appointmentId: 42,
             patientId: 1,
@@ -64,7 +65,8 @@ Creates a new appointment after passing a series of business-rule checks:
       description: 'Bad Request — one of the business-rule validations failed.',
       schema: {
         example: {
-          message: "This time slot is outside the doctor's working hours (08:00:00 - 14:00:00)",
+          message:
+            "This time slot is outside the doctor's working hours (08:00:00 - 14:00:00)",
           error: 'Bad Request',
           statusCode: 400,
         },
@@ -86,7 +88,8 @@ Creates a new appointment after passing a series of business-rule checks:
       description: 'Conflict — the requested time slot is already booked.',
       schema: {
         example: {
-          message: 'This time slot is already taken. Please choose a different time.',
+          message:
+            'This time slot is already taken. Please choose a different time.',
           error: 'Conflict',
           statusCode: 409,
         },
@@ -102,7 +105,7 @@ export function DocGetPatientAppointments() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: "Get all appointments for a specific patient",
+      summary: 'Get all appointments for a specific patient',
       description: `
 Retrieves the complete appointment history for a patient, sorted by date (newest first).
 Each appointment includes full **clinic** details (name, location, city, price, image) and
@@ -178,7 +181,7 @@ export function DocGetDoctorAppointments() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: "Get all appointments for a specific doctor",
+      summary: 'Get all appointments for a specific doctor',
       description: `
 Retrieves the full appointment schedule for a doctor, sorted by date (newest first).
 Each appointment includes the **patient's** basic information (name, phone, gender, birth date).
@@ -261,11 +264,13 @@ Updates the status of an existing appointment. Enforces strict business rules:
     ApiBody({ type: UpdateAppointmentStatusDto }),
     ApiResponse({
       status: HttpStatus.OK,
-      description: 'Status updated successfully. Patient notified via in-app notification and WebSocket.',
+      description:
+        'Status updated successfully. Patient notified via in-app notification and WebSocket.',
       schema: {
         example: {
           success: true,
-          message: 'Appointment status updated from (PENDING) to (CONFIRMED). Patient has been notified in real-time.',
+          message:
+            'Appointment status updated from (PENDING) to (CONFIRMED). Patient has been notified in real-time.',
           data: {
             appointmentId: 42,
             patientId: 1,
@@ -291,7 +296,8 @@ Updates the status of an existing appointment. Enforces strict business rules:
       description: 'Bad Request — attempting to modify a closed appointment.',
       schema: {
         example: {
-          message: 'Cannot modify this appointment because it is already closed with status (CANCELLED)',
+          message:
+            'Cannot modify this appointment because it is already closed with status (CANCELLED)',
           error: 'Bad Request',
           statusCode: 400,
         },
@@ -377,7 +383,8 @@ export function DocGetClinicAppointments() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: 'Get all appointments for a clinic (Staff / Reception dashboard)',
+      summary:
+        'Get all appointments for a clinic (Staff / Reception dashboard)',
       description: `
 Retrieves all appointments associated with a specific clinic, sorted by date (newest first).
 Returns raw appointment records. Intended for **clinic staff and receptionists**.

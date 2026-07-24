@@ -1,19 +1,20 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  HttpStatus, 
-  HttpCode, 
-  UsePipes, 
-  ValidationPipe, 
+import {
+  Controller,
+  Post,
+  Body,
+  HttpStatus,
+  HttpCode,
+  UsePipes,
+  ValidationPipe,
   Get,
   Patch,
   Param,
-  ParseIntPipe
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
+import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dtos/update-appointment-status.dto';
 import {
   DocCreateAppointment,
@@ -31,7 +32,13 @@ export class AppointmentsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
   @DocCreateAppointment()
   async createAppointment(@Body() dto: CreateAppointmentDto) {
     return this.appointmentsService.bookAppointment(dto);
@@ -39,14 +46,33 @@ export class AppointmentsController {
 
   @Get('patient/:patientId')
   @DocGetPatientAppointments()
-  async getPatientAppointments(@Param('patientId', ParseIntPipe) patientId: number) {
+  async getPatientAppointments(
+    @Param('patientId', ParseIntPipe) patientId: number,
+  ) {
     return this.appointmentsService.getPatientAppointments(patientId);
   }
 
   @Get('doctor/:doctorId')
   @DocGetDoctorAppointments()
-  async getDoctorAppointments(@Param('doctorId', ParseIntPipe) doctorId: number) {
+  async getDoctorAppointments(
+    @Param('doctorId', ParseIntPipe) doctorId: number,
+  ) {
     return this.appointmentsService.getDoctorAppointments(doctorId);
+  }
+
+  @Patch(':id')
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
+  async updateAppointment(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateAppointmentDto,
+  ) {
+    return this.appointmentsService.updateAppointment(id, dto);
   }
 
   @Patch(':id/status')
@@ -67,7 +93,16 @@ export class AppointmentsController {
 
   @Get('clinic/:clinicId')
   @DocGetClinicAppointments()
-  async getClinicAppointments(@Param('clinicId', ParseIntPipe) clinicId: number) {
+  async getClinicAppointments(
+    @Param('clinicId', ParseIntPipe) clinicId: number,
+  ) {
     return this.appointmentsService.getClinicAppointments(clinicId);
+  }
+
+  // ⭐⭐⭐ endpoint للاختبار — نحذفه بعد التأكد
+  @Post('cron/expired')
+  async triggerExpiredCron() {
+    await this.appointmentsService.handleExpiredAppointments();
+    return { success: true, message: 'تم تشغيل Cron Job يدوياً' };
   }
 }

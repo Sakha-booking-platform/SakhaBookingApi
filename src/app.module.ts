@@ -19,22 +19,22 @@ import { UploadModule } from './upload/upload.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-     AuthModule,
-     UsersModule, 
-     ProfilesModule, 
-     ClinicsModule, 
-     AvailabilityModule, 
-     AppointmentsModule, 
-     NotificationsModule, 
-     NotificationsModule, 
-     ReviewsModule, 
-     ReviewsModule,
-     SocketModule,
-     UploadModule,
-     UploadModule
-    ],
+    AuthModule,
+    UsersModule,
+    ProfilesModule,
+    ClinicsModule,
+    AvailabilityModule,
+    AppointmentsModule,
+    NotificationsModule,
+    NotificationsModule,
+    ReviewsModule,
+    ReviewsModule,
+    SocketModule,
+    UploadModule,
+    UploadModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
 // trigger recompile
