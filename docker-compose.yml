@@ -1,0 +1,43 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: sakha_api
+
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - .env
+
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+    depends_on:
+      - db
+
+    command: npm run start:dev
+
+  db:
+    image: postgres:16
+
+    container_name: sakha_postgres
+
+    restart: always
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
