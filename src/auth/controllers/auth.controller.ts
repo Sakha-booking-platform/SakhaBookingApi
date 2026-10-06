@@ -4,6 +4,8 @@ import {
   Get,
   Post,
   UseGuards,
+  Query,
+  Redirect,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -39,6 +41,14 @@ export class AuthController {
   @DocVerifyToken()
   async verify(@Body() dto: VerifyTokenDto) {
     return this.authService.verifyToken(dto);
+  }
+
+  @Get('magic-link')
+  @Redirect()
+  async handleMagicLink(@Query('token') token: string) {
+    // توجيه المتصفح لفتح التطبيق عبر الرابط المخصص
+    // sakhabooking://verify?token=XYZ
+    return { url: `sakhabooking://verify?token=${token}` };
   }
 
   @Post('refresh')

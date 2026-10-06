@@ -21,7 +21,7 @@ export class EmailService {
   async sendMagicLink(email: string, token: string): Promise<void> {
     this.logger.log(`محاولة إرسال رابط تسجيل الدخول إلى: ${email}`);
 
-    const appUrl = "http://localhost:3000/auth/verify";
+    const appUrl = "https://sakhabookingapi-1.onrender.com/api/v1/auth/magic-link";
     const magicLink = `${appUrl}?token=${token}`;
 
     try {
