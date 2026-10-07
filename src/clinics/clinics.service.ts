@@ -55,7 +55,6 @@ export class ClinicsService {
       throw new InternalServerErrorException('حدث خطأ أثناء البحث عن العيادات');
     }
   }
-
   /**
    * جلب تفاصيل عيادة معينة مع الأطباء والموظفين التابعين لها
    */

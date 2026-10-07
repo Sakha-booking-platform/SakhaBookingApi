@@ -40,6 +40,11 @@ export class UsersController {
     return this.usersService.findAllUsersForAdmin();
   }
 
+  @Get('all')
+  async getPublicAllUsers() {
+    return this.usersService.findAllUsersForAdmin();
+  }
+
   @Post('profile')
   @UseGuards(AuthGuard)
   @DocUpsertPatientProfile()

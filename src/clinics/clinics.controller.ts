@@ -42,7 +42,6 @@ export class ClinicsController {
     }
     return this.clinicsService.searchClinics(query, pageNum);
   }
-
   @Get(':id')
   @DocGetClinicDetails()
   async getClinicDetails(@Param('id', ParseIntPipe) id: number) {
