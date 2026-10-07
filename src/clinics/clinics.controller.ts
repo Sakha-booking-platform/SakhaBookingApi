@@ -34,6 +34,15 @@ export class ClinicsController {
     return this.clinicsService.findAllSpecializations();
   }
 
+  @Get('nearby')
+  async getNearbyClinics(
+    @Query('lat') lat: string,
+    @Query('lng') lng: string,
+    @Query('radius') radius: string = '15',
+  ) {
+    return this.clinicsService.findNearbyClinics(parseFloat(lat), parseFloat(lng), parseFloat(radius));
+  }
+
   @Get('search')
   async searchClinics(@Query('query') query: string, @Query('page') page: string = '1') {
     const pageNum = parseInt(page, 10) || 1;

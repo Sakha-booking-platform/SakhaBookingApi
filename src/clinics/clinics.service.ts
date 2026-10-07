@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { db } from 'src/db'; // تأكد من مطابقة مسار استيراد ملف الـ db لديك
 import * as schema from 'src/db/schema';
-import { eq, ilike } from 'drizzle-orm';
+import { eq, ilike, sql, isNotNull, and } from 'drizzle-orm';
 import { CreateClinicDto } from './dto/create_clinic.dto';
 import { CreateSpecializationDto } from './dto/create-specialization.dto';
 
@@ -56,6 +56,45 @@ export class ClinicsService {
         .offset(offset);
     } catch (error) {
       throw new InternalServerErrorException('حدث خطأ أثناء البحث عن العيادات');
+    }
+  }
+  
+  async findNearbyClinics(lat: number, lng: number, radiusKm: number) {
+    if (isNaN(lat) || isNaN(lng)) {
+      throw new BadRequestException('خط العرض والطول مطلوبان بشكل صحيح');
+    }
+
+    try {
+      // حساب المسافة بالكيلومتر باستخدام معادلة Haversine
+      const distanceQuery = sql`
+        6371 * acos(
+          cos(radians(${lat})) * cos(radians(${schema.clinics.latitude})) *
+          cos(radians(${schema.clinics.longitude}) - radians(${lng})) +
+          sin(radians(${lat})) * sin(radians(${schema.clinics.latitude}))
+        )
+      `;
+
+      return await db
+        .select({
+          id: schema.clinics.clinicId,
+          name: schema.clinics.name,
+          address: schema.clinics.location,
+          phone: schema.clinics.phone,
+          latitude: schema.clinics.latitude,
+          longitude: schema.clinics.longitude,
+          distanceKm: sql<number>`${distanceQuery}`.as('distanceKm'),
+        })
+        .from(schema.clinics)
+        .where(
+          and(
+            isNotNull(schema.clinics.latitude),
+            isNotNull(schema.clinics.longitude),
+            sql`${distanceQuery} <= ${radiusKm}`
+          )
+        )
+        .orderBy(sql`"distanceKm" ASC`);
+    } catch (error) {
+      throw new InternalServerErrorException('حدث خطأ أثناء جلب العيادات القريبة');
     }
   }
   /**
