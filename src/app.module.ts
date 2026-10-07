@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { ClinicsModule } from './clinics/clinics.module';
+import { DoctorsModule } from './doctors/doctors.module';
 
 import { AppController } from './app.controller';
 import { ProfilesModule } from './profiles/profiles.module';
@@ -23,6 +24,7 @@ import { UploadModule } from './upload/upload.module';
      UsersModule, 
      ProfilesModule, 
      ClinicsModule, 
+     DoctorsModule,
      AvailabilityModule, 
      AppointmentsModule, 
      NotificationsModule, 

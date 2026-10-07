@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { db } from 'src/db'; // تأكد من مطابقة مسار استيراد ملف الـ db لديك
 import * as schema from 'src/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, ilike } from 'drizzle-orm';
 import { CreateClinicDto } from './dto/create_clinic.dto';
 import { CreateSpecializationDto } from './dto/create-specialization.dto';
 
@@ -16,7 +16,9 @@ export class ClinicsService {
    * جلب جميع العيادات المتوفرة في النظام
    * أداء محسّن: جلب الحقول المطلوبة فقط لعرضها في القائمة العامة لتقليل استهلاك الذاكرة
    */
-  async findAllClinics() {
+  async findAllClinics(page: number = 1) {
+    const limit = 10;
+    const offset = (page - 1) * limit;
     try {
       return await db
         .select({
@@ -26,9 +28,31 @@ export class ClinicsService {
           phone: schema.clinics.phone,
 
         })
-        .from(schema.clinics);
+        .from(schema.clinics)
+        .limit(limit)
+        .offset(offset);
     } catch (error) {
       throw new InternalServerErrorException('حدث خطأ أثناء جلب قائمة العيادات');
+    }
+  }
+
+  async searchClinics(query: string, page: number = 1) {
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    try {
+      return await db
+        .select({
+          id: schema.clinics.clinicId,
+          name: schema.clinics.name,
+          address: schema.clinics.location,
+          phone: schema.clinics.phone,
+        })
+        .from(schema.clinics)
+        .where(ilike(schema.clinics.name, `%${query}%`))
+        .limit(limit)
+        .offset(offset);
+    } catch (error) {
+      throw new InternalServerErrorException('حدث خطأ أثناء البحث عن العيادات');
     }
   }
 

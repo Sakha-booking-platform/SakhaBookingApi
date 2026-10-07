@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ClinicsService } from './clinics.service';
 import { CreateClinicDto } from './dto/create_clinic.dto';
@@ -23,14 +23,24 @@ export class ClinicsController {
 
   @Get()
   @DocGetAllClinics()
-  async getAllClinics() {
-    return this.clinicsService.findAllClinics();
+  async getAllClinics(@Query('page') page: string = '1') {
+    const pageNum = parseInt(page, 10) || 1;
+    return this.clinicsService.findAllClinics(pageNum);
   }
 
   @Get('specializations/all')
   @DocGetAllSpecializations()
   async getAllSpecializations() {
     return this.clinicsService.findAllSpecializations();
+  }
+
+  @Get('search')
+  async searchClinics(@Query('query') query: string, @Query('page') page: string = '1') {
+    const pageNum = parseInt(page, 10) || 1;
+    if (!query) {
+      return this.clinicsService.findAllClinics(pageNum);
+    }
+    return this.clinicsService.searchClinics(query, pageNum);
   }
 
   @Get(':id')
