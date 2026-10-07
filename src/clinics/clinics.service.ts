@@ -26,7 +26,8 @@ export class ClinicsService {
           name: schema.clinics.name,
           address: schema.clinics.location,
           phone: schema.clinics.phone,
-
+          latitude: schema.clinics.latitude,
+          longitude: schema.clinics.longitude,
         })
         .from(schema.clinics)
         .limit(limit)
@@ -46,6 +47,8 @@ export class ClinicsService {
           name: schema.clinics.name,
           address: schema.clinics.location,
           phone: schema.clinics.phone,
+          latitude: schema.clinics.latitude,
+          longitude: schema.clinics.longitude,
         })
         .from(schema.clinics)
         .where(ilike(schema.clinics.name, `%${query}%`))
@@ -120,6 +123,8 @@ export class ClinicsService {
           city: dto.city,
           phone: dto.phone,
           description: dto.description || null,
+          latitude: dto.latitude || null,
+          longitude: dto.longitude || null,
         })
         .returning();
 

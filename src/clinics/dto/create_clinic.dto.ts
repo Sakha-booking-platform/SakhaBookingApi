@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsPhoneNumber, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsPhoneNumber, MaxLength, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateClinicDto {
@@ -49,4 +49,20 @@ export class CreateClinicDto {
   @IsOptional()
   @MaxLength(500, { message: 'النبذة التعريفية للعيادة يجب أن لا تتجاوز 500 حرف' })
   description?: string;
+
+  @ApiPropertyOptional({
+    description: 'Latitude of the clinic location',
+    example: 24.7136,
+  })
+  @IsNumber({}, { message: 'خط العرض يجب أن يكون رقماً' })
+  @IsOptional()
+  latitude?: number;
+
+  @ApiPropertyOptional({
+    description: 'Longitude of the clinic location',
+    example: 46.6753,
+  })
+  @IsNumber({}, { message: 'خط الطول يجب أن يكون رقماً' })
+  @IsOptional()
+  longitude?: number;
 }

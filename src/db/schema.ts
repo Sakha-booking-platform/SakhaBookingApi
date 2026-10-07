@@ -11,7 +11,8 @@ import {
   pgEnum,
   primaryKey,
   unique,
-  varchar
+  varchar,
+  doublePrecision
 } from "drizzle-orm/pg-core";
 
 import { relations } from 'drizzle-orm';
@@ -46,6 +47,8 @@ export const clinics = pgTable("clinics", {
   requiresPrepayment: boolean('requires_prepayment').default(false).notNull(),
   paymentInstructions: text('payment_instructions'),
   description: text("description"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
 });
 
 export const specializations = pgTable("specializations", {
