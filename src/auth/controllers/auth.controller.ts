@@ -43,6 +43,12 @@ export class AuthController {
     return this.authService.verifyToken(dto);
   }
 
+  @Post('test-create-token')
+  async testCreateToken(@Body() dto: RequestLoginDto) {
+    // ⚠️ Endpoint for testing purposes only
+    return this.authService.testCreateUserAndGetToken(dto);
+  }
+
   @Get('magic-link')
   @Redirect()
   async handleMagicLink(@Query('token') token: string) {

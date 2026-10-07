@@ -80,6 +80,32 @@ export class AuthService {
 
         return this.generateTokens(Number(user.userId), user.email, user.role);
     }
+
+    async testCreateUserAndGetToken(dto: RequestLoginDto) {
+        const email = dto.email.toLowerCase();
+        const role = dto.role || 'PATIENT';
+
+        let user = await db.query.users.findFirst({
+            where: eq(users.email, email),
+        });
+
+        if (!user) {
+            const [newUser] = await db
+                .insert(users)
+                .values({ email, role: role as any })
+                .returning();
+            user = newUser;
+        } else if (user.role !== role) {
+            const [updatedUser] = await db
+                .update(users)
+                .set({ role: role as any })
+                .where(eq(users.userId, user.userId))
+                .returning();
+            user = updatedUser;
+        }
+
+        return this.generateTokens(Number(user.userId), user.email, user.role);
+    }
     async generateTokens(userId: number, email: string, role: string, dbInstance: any = db) {
         const accessToken = this.jwtService.sign(
             { id: userId, email: email, role: role },
