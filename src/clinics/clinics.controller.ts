@@ -38,9 +38,8 @@ export class ClinicsController {
   async getNearbyClinics(
     @Query('lat') lat: string,
     @Query('lng') lng: string,
-    @Query('radius') radius: string = '15',
   ) {
-    return this.clinicsService.findNearbyClinics(parseFloat(lat), parseFloat(lng), parseFloat(radius));
+    return this.clinicsService.findNearbyClinics(parseFloat(lat), parseFloat(lng));
   }
 
   @Get('search')

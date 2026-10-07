@@ -59,7 +59,7 @@ export class ClinicsService {
     }
   }
   
-  async findNearbyClinics(lat: number, lng: number, radiusKm: number) {
+  async findNearbyClinics(lat: number, lng: number) {
     if (isNaN(lat) || isNaN(lng)) {
       throw new BadRequestException('خط العرض والطول مطلوبان بشكل صحيح');
     }
@@ -88,11 +88,11 @@ export class ClinicsService {
         .where(
           and(
             isNotNull(schema.clinics.latitude),
-            isNotNull(schema.clinics.longitude),
-            sql`${distanceQuery} <= ${radiusKm}`
+            isNotNull(schema.clinics.longitude)
           )
         )
-        .orderBy(sql`"distanceKm" ASC`);
+        .orderBy(sql`"distanceKm" ASC`)
+        .limit(5);
     } catch (error) {
       throw new InternalServerErrorException('حدث خطأ أثناء جلب العيادات القريبة');
     }
