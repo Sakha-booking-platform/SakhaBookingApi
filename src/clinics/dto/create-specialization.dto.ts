@@ -21,4 +21,12 @@ export class CreateSpecializationDto {
   @IsOptional()
   @MaxLength(300, { message: 'وصف التخصص لا يجب أن يتجاوز 300 حرف' })
   description?: string;
+
+  @ApiPropertyOptional({
+    description: 'An image URL or path for the specialization',
+    example: 'https://example.com/images/cardiology.png',
+  })
+  @IsString({ message: 'رابط الصورة يجب أن يكون نصاً' })
+  @IsOptional()
+  image?: string;
 }

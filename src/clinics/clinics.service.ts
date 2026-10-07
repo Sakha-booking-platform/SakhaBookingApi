@@ -169,6 +169,7 @@ export class ClinicsService {
         .values({
           name: dto.name,
           description: dto.description || null,
+          image: dto.image || null,
         })
         .returning();
 

@@ -52,6 +52,7 @@ export const specializations = pgTable("specializations", {
   specializationId: serial("specialization_id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
+  image: text("image"),
 });
 
 export const doctors = pgTable("doctors", {
